@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Berichtsheft Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #f3f2ef;
+  color: #191919;
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.layout { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 240px;
+  background: #ffffff;
+  border-right: 1px solid #e0dfdc;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  overflow-y: auto;
+  z-index: 100;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.sidebar-logo {
+  padding: 20px 16px 16px;
+  border-bottom: 1px solid #e0dfdc;
+  background: #0a66c2;
+}
+.sidebar-logo h1 { font-size: 18px; font-weight: 700; color: #ffffff; letter-spacing: -0.3px; }
+.sidebar-logo p { font-size: 11px; color: rgba(255,255,255,0.75); margin-top: 2px; }
+.nav-section { padding: 8px 0; border-bottom: 1px solid #e0dfdc; }
+.nav-section-title { font-size: 11px; font-weight: 600; color: #666666; text-transform: uppercase; letter-spacing: 0.8px; padding: 8px 16px 4px; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px; cursor: pointer; font-size: 13px; font-weight: 500;
+  color: #444444; border-left: 3px solid transparent; transition: all 0.15s; text-decoration: none;
+}
+.nav-item:hover { background: #f3f2ef; color: #0a66c2; }
+.nav-item.active { background: #eef3fb; color: #0a66c2; border-left-color: #0a66c2; font-weight: 600; }
+.nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+.main { margin-left: 240px; flex: 1; padding: 24px; max-width: calc(100% - 240px); }
+.card {
+  background: #ffffff; border: 1px solid #e0dfdc; border-radius: 8px;
+  padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid #f0efec;
+}
+.card-title { font-size: 16px; font-weight: 700; color: #191919; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group.full { grid-column: 1 / -1; }
+label { font-size: 12px; font-weight: 600; color: #444444; text-transform: uppercase; letter-spacing: 0.5px; }
+input, textarea, select {
+  border: 1px solid #d0cfc9; border-radius: 6px; padding: 9px 12px;
+  font-size: 14px; font-family: inherit; color: #191919; background: #ffffff;
+  transition: border-color 0.15s, box-shadow 0.15s; outline: none;
+}
+input:focus, textarea:focus, select:focus {
+  border-color: #0a66c2; box-shadow: 0 0 0 3px rgba(10,102,194,0.12);
+}
+textarea { resize: vertical; min-height: 80px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 18px; border-radius: 20px; font-size: 13px; font-weight: 600;
+  cursor: pointer; border: none; transition: all 0.15s; text-decoration: none;
+}
+.btn-primary { background: #0a66c2; color: #ffffff; }
+.btn-primary:hover { background: #004182; }
+.btn-secondary { background: transparent; color: #0a66c2; border: 1.5px solid #0a66c2; }
+.btn-secondary:hover { background: #eef3fb; }
+.btn-ghost { background: transparent; color: #666666; border: 1.5px solid #d0cfc9; }
+.btn-ghost:hover { background: #f3f2ef; color: #191919; }
+.btn-danger { background: transparent; color: #cc1016; border: 1.5px solid #cc1016; }
+.btn-danger:hover { background: #fef2f2; }
+.btn-success { background: #057642; color: #ffffff; }
+.btn-success:hover { background: #046236; }
+.btn-sm { padding: 6px 14px; font-size: 12px; border-radius: 16px; }
+.page { display: none; }
+.page.active { display: block; }
+.page-title { font-size: 22px; font-weight: 700; color: #191919; margin-bottom: 4px; }
+.page-subtitle { font-size: 13px; color: #666666; margin-bottom: 20px; }
+.week-item {
+  background: #ffffff; border: 1px solid #e0dfdc; border-radius: 8px; padding: 16px;
+  margin-bottom: 10px; cursor: pointer; transition: all 0.15s;
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+.week-item:hover { border-color: #0a66c2; box-shadow: 0 2px 8px rgba(10,102,194,0.12); }
+.week-item-left { display: flex; align-items: center; gap: 14px; }
+.week-badge {
+  background: #eef3fb; color: #0a66c2; font-size: 12px; font-weight: 700;
+  padding: 6px 12px; border-radius: 20px; white-space: nowrap;
+}
+.week-item-title { font-size: 14px; font-weight: 600; color: #191919; }
+.week-item-meta { font-size: 12px; color: #666666; margin-top: 2px; }
+.week-item-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 5px; }
+.tag { font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 10px; }
+.tag-office { background: #e7f3ff; color: #0a66c2; }
+.tag-home { background: #e6f4ea; color: #057642; }
+.tag-school { background: #fff8e1; color: #b7791f; }
+.tag-sick { background: #fce8e8; color: #cc1016; }
+.tag-vacation { background: #f0e6ff; color: #7c3aed; }
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000;
+  display: none; align-items: center; justify-content: center; padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: #ffffff; border-radius: 10px; width: 100%; max-width: 640px;
+  max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+}
+.modal-header {
+  padding: 20px 24px 16px; border-bottom: 1px solid #e0dfdc;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; background: #ffffff; z-index: 1;
+}
+.modal-title { font-size: 17px; font-weight: 700; color: #191919; }
+.modal-close {
+  width: 32px; height: 32px; border-radius: 50%; border: none; background: transparent;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  color: #666666; font-size: 18px; transition: background 0.15s;
+}
+.modal-close:hover { background: #f3f2ef; }
+.modal-body { padding: 20px 24px; }
+.modal-footer {
+  padding: 16px 24px; border-top: 1px solid #e0dfdc;
+  display: flex; gap: 10px; justify-content: flex-end;
+}
+.days-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 4px; }
+.day-input-group { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.day-input-group label {
+  font-size: 11px; text-align: center; text-transform: none;
+  letter-spacing: 0; color: #444444; font-weight: 500;
+}
+.day-input-group input { width: 100%; text-align: center; padding: 8px 4px; }
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+.stat-card {
+  background: #ffffff; border: 1px solid #e0dfdc; border-radius: 8px;
+  padding: 16px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.stat-value { font-size: 26px; font-weight: 700; color: #0a66c2; }
+.stat-label { font-size: 11px; color: #666666; margin-top: 2px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+.profile-summary {
+  background: #ffffff; border: 1px solid #e0dfdc; border-radius: 8px; padding: 20px;
+  margin-bottom: 20px; display: flex; align-items: center; gap: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.profile-avatar {
+  width: 60px; height: 60px; border-radius: 50%; background: #0a66c2;
+  display: flex; align-items: center; justify-content: center; color: #ffffff;
+  font-size: 22px; font-weight: 700; flex-shrink: 0;
+}
+.profile-info h2 { font-size: 18px; font-weight: 700; color: #191919; }
+.profile-info p { font-size: 13px; color: #555555; margin-top: 2px; }
+.empty-state { text-align: center; padding: 48px 20px; color: #888888; }
+.empty-state svg { width: 48px; height: 48px; margin-bottom: 12px; opacity: 0.4; }
+.empty-state p { font-size: 14px; margin-bottom: 16px; }
+.search-bar { position: relative; margin-bottom: 16px; }
+.search-bar input { width: 100%; padding-left: 36px; border-radius: 20px; }
+.search-bar svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #888888; width: 16px; height: 16px; }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f3f2ef; }
+::-webkit-scrollbar-thumb { background: #c0bdb5; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #999999; }
+.toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+.toast {
+  background: #191919; color: #ffffff; padding: 12px 18px; border-radius: 8px;
+  font-size: 13px; font-weight: 500; box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  animation: slideIn 0.2s ease; min-width: 200px;
+}
+.toast.success { background: #057642; }
+.toast.error { background: #cc1016; }
+@keyframes slideIn { from { transform: translateX(60px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+.confirm-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000;
+  display: none; align-items: center; justify-content: center;
+}
+.confirm-overlay.open { display: flex; }
+.confirm-box {
+  background: #ffffff; border-radius: 10px; padding: 28px; max-width: 380px;
+  width: 90%; box-shadow: 0 8px 40px rgba(0,0,0,0.18); text-align: center;
+}
+.confirm-icon { font-size: 32px; margin-bottom: 12px; }
+.confirm-title { font-size: 17px; font-weight: 700; color: #191919; margin-bottom: 8px; }
+.confirm-text { font-size: 13px; color: #555555; margin-bottom: 20px; line-height: 1.5; }
+.confirm-btns { display: flex; gap: 10px; justify-content: center; }
+@media (max-width: 768px) {
+  .sidebar { width: 100%; position: relative; height: auto; }
+  .main { margin-left: 0; max-width: 100%; }
+  .layout { flex-direction: column; }
+  .form-grid, .form-grid-3 { grid-template-columns: 1fr; }
+  .stats-row { grid-template-columns: 1fr 1fr; }
+  .days-row { grid-template-columns: repeat(3, 1fr); }
+}
+@media print {
+  .sidebar, .no-print { display: none !important; }
+  .main { margin-left: 0; max-width: 100%; padding: 0; }
+  #printContainer { display: block !important; }
+  #app { display: none !important; }
+  .print-page {
+    background: #ffffff;
+    padding: 15mm 18mm 20mm;
+    font-family: 'Times New Roman', serif;
+    font-size: 10pt;
+    color: #000000;
+    max-width: 210mm;
+    min-height: 297mm;
+    position: relative;
+    page-break-after: always;
+  }
+  .print-header { margin-bottom: 5mm; border-bottom: 0.5pt solid #000; padding-bottom: 3mm; }
+  .print-title { font-size: 14pt; font-weight: bold; }
+  .print-subtitle { font-size: 10pt; color: #444; }
+  .print-meta-table { width: 100%; border-collapse: collapse; margin-bottom: 4mm; }
+  .print-meta-table td { padding: 2mm 3mm; border: 0.5pt solid #999; font-size: 9.5pt; vertical-align: top; }
+  .print-meta-table td:nth-child(odd) { font-weight: bold; background: #f5f5f5; width: 22%; }
+  .print-desc { border: 0.5pt solid #999; padding: 3mm; min-height: 45mm; font-size: 9.5pt; margin-bottom: 4mm; white-space: pre-wrap; }
+  .print-days-table { width: 100%; border-collapse: collapse; margin-bottom: 4mm; }
+  .print-days-table th { background: #e8e8e8; border: 0.5pt solid #999; padding: 2mm; font-size: 9pt; text-align: center; }
+  .print-days-table td { border: 0.5pt solid #999; padding: 2mm; text-align: center; font-size: 9.5pt; }
+  .print-confirmation { border: 0.5pt solid #000; padding: 4mm; font-size: 9pt; margin-bottom: 6mm; line-height: 1.5; background: #fafafa; }
+  .print-signature-row { display: flex; justify-content: space-between; margin-top: 8mm; }
+  .print-signature-box { width: 45%; }
+  .print-signature-line { border-bottom: 0.5pt solid #000; height: 12mm; margin-bottom: 2mm; }
+  .print-signature-label { font-size: 8.5pt; color: #444; }
+  .print-signature-name { font-size: 8.5pt; color: #222; margin-top: 1mm; }
+  .print-footer { position: absolute; bottom: 12mm; left: 18mm; right: 18mm; text-align: center; font-size: 8pt; color: #777; border-top: 0.5pt solid #ccc; padding-top: 2mm; }
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <h1>📋 Berichtsheft</h1>
+      <p>Ausbildungsnachweis Generator</p>
+    </div>
+    <nav>
+      <div class="nav-section">
+        <div class="nav-section-title">Navigation</div>
+        <a class="nav-item active" onclick="showPage('dashboard')" data-page="dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          Übersicht
+        </a>
+        <a class="nav-item" onclick="showPage('profile')" data-page="profile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Stammdaten
+        </a>
+        <a class="nav-item" onclick="showPage('entries')" data-page="entries">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          Berichte
+        </a>
+        <a class="nav-item" onclick="showPage('print')" data-page="print">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Drucken
+        </a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Daten</div>
+        <a class="nav-item" onclick="exportData()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Exportieren
+        </a>
+        <a class="nav-item" onclick="document.getElementById('importFile').click()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Importieren
+        </a>
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+      </div>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <!-- DASHBOARD -->
+    <div id="page-dashboard" class="page active">
+      <p class="page-title">Übersicht</p>
+      <p class="page-subtitle">Willkommen in Ihrem Berichtsheft-System</p>
+      <div id="profileSummary" class="profile-summary" style="display:none">
+        <div class="profile-avatar" id="avatarInitials">AW</div>
+        <div class="profile-info">
+          <h2 id="summaryName">–</h2>
+          <p id="summaryDetails">–</p>
+        </div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-value" id="statTotal">0</div><div class="stat-label">Berichte gesamt</div></div>
+        <div class="stat-card"><div class="stat-value" id="statOffice">0</div><div class="stat-label">Tage Betrieb</div></div>
+        <div class="stat-card"><div class="stat-value" id="statHome">0</div><div class="stat-label">Tage Homeoffice</div></div>
+        <div class="stat-card"><div class="stat-value" id="statSchool">0</div><div class="stat-label">Tage Schule</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Letzte Einträge</span>
+          <button class="btn btn-primary btn-sm" onclick="showPage('entries')">Alle anzeigen</button>
+        </div>
+        <div id="recentEntries">
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <p>Noch keine Berichte vorhanden.</p>
+            <button class="btn btn-primary" onclick="showPage('entries')">Ersten Bericht erstellen</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFIL -->
+    <div id="page-profile" class="page">
+      <p class="page-title">Stammdaten</p>
+      <p class="page-subtitle">Ihre persönlichen Angaben zur Ausbildung</p>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Persönliche Daten</span>
+          <button class="btn btn-primary" onclick="saveProfile()">Speichern</button>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Vorname Auszubildende/r</label>
+            <input type="text" id="pFirstName" placeholder="z.B. Alexander">
+          </div>
+          <div class="form-group">
+            <label>Nachname Auszubildende/r</label>
+            <input type="text" id="pLastName" placeholder="z.B. Wiese">
+          </div>
+          <div class="form-group">
+            <label>Geburtsdatum</label>
+            <input type="date" id="pBirthdate">
+          </div>
+          <div class="form-group">
+            <label>Ausbildungsberuf</label>
+            <input type="text" id="pProfession" placeholder="z.B. Fachinformatiker/in">
+          </div>
+          <div class="form-group full">
+            <label>Ausbildungsbetrieb / Unternehmen</label>
+            <input type="text" id="pCompany" placeholder="z.B. Muster GmbH">
+          </div>
+          <div class="form-group">
+            <label>Name Ausbilder/in</label>
+            <input type="text" id="pAusbilder" placeholder="z.B. Max Mustermann">
+          </div>
+          <div class="form-group">
+            <label>Ausbildungsbeginn</label>
+            <input type="date" id="pStartDate">
+          </div>
+          <div class="form-group">
+            <label>Ausbildungsende (voraussichtlich)</label>
+            <input type="date" id="pEndDate">
+          </div>
+          <div class="form-group">
+            <label>Wöchentliche Soll-Stunden</label>
+            <input type="number" id="pWeeklyHours" value="40" min="1" max="60">
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Bestätigungstext (Vorschau)</span></div>
+        <div style="font-size:13px;color:#333;line-height:1.7;padding:14px;background:#f8f7f5;border-radius:6px;border-left:3px solid #0a66c2;">
+          Hiermit bestätigen wir, dass <strong id="confirmNamePreview">Alexander Wiese</strong> die gemäß § 43 Berufsbildungsgesetz erforderlichen Ausbildungsnachweise eigenhändig, ohne fremde Hilfe und vollständig erstellt hat. Diese Erklärung dient der Vorlage beim zuständigen Prüfungsausschuss.
+        </div>
+      </div>
+    </div>
+
+    <!-- BERICHTE -->
+    <div id="page-entries" class="page">
+      <p class="page-title">Ausbildungsnachweise</p>
+      <p class="page-subtitle">Wöchentliche Berichte verwalten</p>
+      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;" class="no-print">
+        <button class="btn btn-primary" onclick="openEntryModal(null)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Neuer Bericht
+        </button>
+        <button class="btn btn-ghost" onclick="autoFillKW()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Aktuelle KW vorausfüllen
+        </button>
+      </div>
+      <div class="search-bar no-print">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="searchInput" placeholder="Berichte durchsuchen..." oninput="renderEntries()">
+      </div>
+      <div id="entriesContainer"></div>
+    </div>
+
+    <!-- DRUCKEN -->
+    <div id="page-print" class="page">
+      <p class="page-title">Drucken &amp; Exportieren</p>
+      <p class="page-subtitle">Berichte für die Vorlage beim Prüfungsausschuss vorbereiten</p>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Druckoptionen</span></div>
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label>Von KW</label>
+            <input type="number" id="printFrom" min="1" max="53" placeholder="z.B. 1">
+          </div>
+          <div class="form-group">
+            <label>Bis KW</label>
+            <input type="number" id="printTo" min="1" max="53" placeholder="z.B. 52">
+          </div>
+          <div class="form-group">
+            <label>Jahr</label>
+            <input type="number" id="printYear" placeholder="z.B. 2024">
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="printReports(false)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            Alle Berichte drucken
+          </button>
+          <button class="btn btn-secondary" onclick="printReports(true)">Gefilterte Berichte drucken</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Hinweis</span></div>
+        <p style="font-size:13px;color:#444;line-height:1.6;">
+          Jeder Bericht wird auf einer eigenen Seite gedruckt. Der Bestätigungstext gemäß § 43 BBiG sowie Unterschriftsfelder für Sie und Ihren Ausbilder sind auf jedem Blatt enthalten.<br><br>
+          Bitte stellen Sie sicher, dass die Stammdaten unter <strong>Stammdaten</strong> vollständig ausgefüllt sind, bevor Sie drucken.
+        </p>
+      </div>
+    </div>
+  </main>
+</div>
+</div>
+
+<!-- Print Container -->
+<div id="printContainer" style="display:none;"></div>
+
+<!-- Modal: Bericht bearbeiten -->
+<div class="modal-overlay" id="entryModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modalTitle">Neuer Bericht</span>
+      <button class="modal-close" onclick="closeEntryModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Kalenderwoche</label>
+          <input type="number" id="eKW" min="1" max="53" placeholder="z.B. 42" oninput="onKWOrYearChange()">
+        </div>
+        <div class="form-group">
+          <label>Jahr</label>
+          <input type="number" id="eYear" placeholder="z.B. 2024" oninput="onKWOrYearChange()">
+        </div>
+        <div class="form-group">
+          <label>Datum von (Mo)</label>
+          <input type="date" id="eFrom" onchange="onDateFromChange()">
+        </div>
+        <div class="form-group">
+          <label>Datum bis (Fr)</label>
+          <input type="date" id="eTo" onchange="onDateToChange()">
+        </div>
+        <div class="form-group full">
+          <label>Tätigkeiten / Beschreibung</label>
+          <textarea id="eDescription" rows="5" placeholder="Beschreiben Sie Ihre Tätigkeiten dieser Woche..."></textarea>
+        </div>
+        <div class="form-group full">
+          <label>Arbeitsstunden gesamt (Woche)</label>
+          <input type="number" id="eHours" min="0" max="80" step="0.5" placeholder="z.B. 40">
+        </div>
+      </div>
+      <div style="margin-top:16px;">
+        <label style="font-size:12px;font-weight:600;color:#444444;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:10px;">Anwesenheit (in Tagen)</label>
+        <div class="days-row">
+          <div class="day-input-group">
+            <label>🏢 Betrieb</label>
+            <input type="number" id="eDaysBetrieb" min="0" max="5" step="0.5" value="0">
+          </div>
+          <div class="day-input-group">
+            <label>🏠 Homeoffice</label>
+            <input type="number" id="eDaysHome" min="0" max="5" step="0.5" value="0">
+          </div>
+          <div class="day-input-group">
+            <label>🎓 Schule</label>
+            <input type="number" id="eDaysSchool" min="0" max="5" step="0.5" value="0">
+          </div>
+          <div class="day-input-group">
+            <label>🤒 Krank</label>
+            <input type="number" id="eDaysSick" min="0" max="5" step="0.5" value="0">
+          </div>
+          <div class="day-input-group">
+            <label>🌴 Urlaub</label>
+            <input type="number" id="eDaysVacation" min="0" max="5" step="0.5" value="0">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeEntryModal()">Abbrechen</button>
+      <button class="btn btn-danger btn-sm" id="deleteEntryBtn" onclick="deleteCurrentEntry()" style="display:none">Löschen</button>
+      <button class="btn btn-primary" onclick="saveEntry()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Dialog -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="confirm-icon" id="confirmIcon">⚠️</div>
+    <div class="confirm-title" id="confirmTitle">Sind Sie sicher?</div>
+    <div class="confirm-text" id="confirmText">Diese Aktion kann nicht rückgängig gemacht werden.</div>
+    <div class="confirm-btns">
+      <button class="btn btn-ghost" onclick="resolveConfirm(false)">Abbrechen</button>
+      <button class="btn btn-danger" id="confirmOkBtn" onclick="resolveConfirm(true)">Ja, fortfahren</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ===== IndexedDB =====
+let db;
+const DB_NAME = 'berichtsheft_v1';
+const DB_VER = 1;
+
+function initDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VER);
+    req.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains('profile')) d.createObjectStore('profile', { keyPath: 'id' });
+      if (!d.objectStoreNames.contains('entries')) d.createObjectStore('entries', { keyPath: 'id', autoIncrement: true });
+    };
+    req.onsuccess = e => { db = e.target.result; resolve(); };
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function dbGet(store, key) {
+  return new Promise((res, rej) => {
+    const r = db.transaction(store).objectStore(store).get(key);
+    r.onsuccess = () => res(r.result || null);
+    r.onerror = () => rej(r.error);
+  });
+}
+function dbGetAll(store) {
+  return new Promise((res, rej) => {
+    const r = db.transaction(store).objectStore(store).getAll();
+    r.onsuccess = () => res(r.result || []);
+    r.onerror = () => rej(r.error);
+  });
+}
+function dbPut(store, data) {
+  return new Promise((res, rej) => {
+    const r = db.transaction(store, 'readwrite').objectStore(store).put(data);
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+}
+function dbDelete(store, key) {
+  return new Promise((res, rej) => {
+    const r = db.transaction(store, 'readwrite').objectStore(store).delete(key);
+    r.onsuccess = () => res();
+    r.onerror = () => rej(r.error);
+  });
+}
+function dbClear(store) {
+  return new Promise((res, rej) => {
+    const r = db.transaction(store, 'readwrite').objectStore(store).clear();
+    r.onsuccess = () => res();
+    r.onerror = () => rej(r.error);
+  });
+}
+
+// ===== State =====
+let profile = {};
+let currentEditId = null;
+let confirmCallback = null;
+
+// ===== Navigation =====
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  const nav = document.querySelector('[data-page="' + name + '"]');
+  if (nav) nav.classList.add('active');
+  if (name === 'dashboard') renderDashboard();
+  if (name === 'entries') renderEntries();
+  if (name === 'profile') loadProfileForm();
+  if (name === 'print') document.getElementById('printYear').value = new Date().getFullYear();
+}
+
+// ===== Toast =====
+function toast(msg, type) {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast' + (type ? ' ' + type : '');
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 3200);
+}
+
+// ===== Confirm =====
+function showConfirm(title, text, icon, okLabel, okClass) {
+  return new Promise(resolve => {
+    confirmCallback = resolve;
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmText').textContent = text;
+    document.getElementById('confirmIcon').textContent = icon || '⚠️';
+    const btn = document.getElementById('confirmOkBtn');
+    btn.textContent = okLabel || 'Ja, fortfahren';
+    btn.className = 'btn ' + (okClass || 'btn-danger');
+    document.getElementById('confirmOverlay').classList.add('open');
+  });
+}
+function resolveConfirm(val) {
+  document.getElementById('confirmOverlay').classList.remove('open');
+  if (confirmCallback) { confirmCallback(val); confirmCallback = null; }
+}
+
+// ===== Helpers =====
+function fmtDate(d) {
+  if (!d) return '';
+  const p = d.split('-');
+  if (p.length !== 3) return d;
+  return p[2] + '.' + p[1] + '.' + p[0];
+}
+function toInputDate(d) {
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return yyyy + '-' + mm + '-' + dd;
+}
+function getISOWeek(date) {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+  const y = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d - y) / 86400000) + 1) / 7);
+}
+function getMondayOfKW(kw, year) {
+  const jan4 = new Date(Date.UTC(year, 0, 4));
+  const dow = jan4.getUTCDay() || 7;
+  const monday = new Date(jan4);
+  monday.setUTCDate(jan4.getUTCDate() - (dow - 1) + (kw - 1) * 7);
+  return monday;
+}
+
+// ===== Profile =====
+async function loadProfileForm() {
+  profile = (await dbGet('profile', 'main')) || {};
+  document.getElementById('pFirstName').value = profile.firstName || '';
+  document.getElementById('pLastName').value = profile.lastName || '';
+  document.getElementById('pBirthdate').value = profile.birthdate || '';
+  document.getElementById('pProfession').value = profile.profession || '';
+  document.getElementById('pCompany').value = profile.company || '';
+  document.getElementById('pAusbilder').value = profile.ausbilder || '';
+  document.getElementById('pStartDate').value = profile.startDate || '';
+  document.getElementById('pEndDate').value = profile.endDate || '';
+  document.getElementById('pWeeklyHours').value = profile.weeklyHours || 40;
+  updateConfirmPreview();
+}
+function updateConfirmPreview() {
+  const fn = document.getElementById('pFirstName').value;
+  const ln = document.getElementById('pLastName').value;
+  document.getElementById('confirmNamePreview').textContent = (fn + ' ' + ln).trim() || 'Alexander Wiese';
+}
+document.getElementById('pFirstName').addEventListener('input', updateConfirmPreview);
+document.getElementById('pLastName').addEventListener('input', updateConfirmPreview);
+
+async function saveProfile() {
+  const data = {
+    id: 'main',
+    firstName: document.getElementById('pFirstName').value.trim(),
+    lastName: document.getElementById('pLastName').value.trim(),
+    birthdate: document.getElementById('pBirthdate').value,
+    profession: document.getElementById('pProfession').value.trim(),
+    company: document.getElementById('pCompany').value.trim(),
+    ausbilder: document.getElementById('pAusbilder').value.trim(),
+    startDate: document.getElementById('pStartDate').value,
+    endDate: document.getElementById('pEndDate').value,
+    weeklyHours: parseInt(document.getElementById('pWeeklyHours').value) || 40,
+  };
+  await dbPut('profile', data);
+  profile = data;
+  toast('Stammdaten gespeichert!', 'success');
+  renderDashboard();
+}
+
+// ===== Dashboard =====
+async function renderDashboard() {
+  profile = (await dbGet('profile', 'main')) || {};
+  const entries = await dbGetAll('entries');
+
+  const hasProfile = profile.firstName || profile.lastName;
+  const el = document.getElementById('profileSummary');
+  if (hasProfile) {
+    el.style.display = 'flex';
+    const name = (profile.firstName + ' ' + profile.lastName).trim();
+    document.getElementById('summaryName').textContent = name;
+    document.getElementById('avatarInitials').textContent = ((profile.firstName || 'A')[0] + (profile.lastName || 'W')[0]).toUpperCase();
+    let details = profile.profession || 'Auszubildende/r';
+    if (profile.company) details += ' · ' + profile.company;
+    if (profile.ausbilder) details += ' · Ausbilder: ' + profile.ausbilder;
+    document.getElementById('summaryDetails').textContent = details;
+  } else {
+    el.style.display = 'none';
+  }
+
+  document.getElementById('statTotal').textContent = entries.length;
+  document.getElementById('statOffice').textContent = entries.reduce((s, e) => s + (parseFloat(e.daysBetrieb) || 0), 0);
+  document.getElementById('statHome').textContent = entries.reduce((s, e) => s + (parseFloat(e.daysHome) || 0), 0);
+  document.getElementById('statSchool').textContent = entries.reduce((s, e) => s + (parseFloat(e.daysSchool) || 0), 0);
+
+  const recent = [...entries].sort((a, b) => (b.year * 100 + b.kw) - (a.year * 100 + a.kw)).slice(0, 5);
+  const c = document.getElementById('recentEntries');
+  if (recent.length === 0) {
+    c.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><p>Noch keine Berichte vorhanden.</p><button class="btn btn-primary" onclick="showPage(\'entries\')">Ersten Bericht erstellen</button></div>';
+  } else {
+    c.innerHTML = recent.map(e => entryHTML(e)).join('');
+  }
+}
+
+// ===== Entries =====
+function entryHTML(e) {
+  const tags = [];
+  if (e.daysBetrieb > 0) tags.push('<span class="tag tag-office">🏢 ' + e.daysBetrieb + 'T Betrieb</span>');
+  if (e.daysHome > 0) tags.push('<span class="tag tag-home">🏠 ' + e.daysHome + 'T Homeoffice</span>');
+  if (e.daysSchool > 0) tags.push('<span class="tag tag-school">🎓 ' + e.daysSchool + 'T Schule</span>');
+  if (e.daysSick > 0) tags.push('<span class="tag tag-sick">🤒 ' + e.daysSick + 'T Krank</span>');
+  if (e.daysVacation > 0) tags.push('<span class="tag tag-vacation">🌴 ' + e.daysVacation + 'T Urlaub</span>');
+  const dateRange = e.dateFrom && e.dateTo ? fmtDate(e.dateFrom) + ' – ' + fmtDate(e.dateTo) : '';
+  const desc = e.description ? e.description.substring(0, 90) + (e.description.length > 90 ? '…' : '') : '(keine Beschreibung)';
+  const meta = [dateRange, e.hours ? e.hours + ' Std.' : ''].filter(Boolean).join(' · ');
+  return '<div class="week-item" onclick="openEntryModal(' + e.id + ')">'
+    + '<div class="week-item-left">'
+    + '<div class="week-badge">KW ' + e.kw + ' / ' + e.year + '</div>'
+    + '<div>'
+    + '<div class="week-item-title">' + escHtml(desc) + '</div>'
+    + (meta ? '<div class="week-item-meta">' + meta + '</div>' : '')
+    + '<div class="week-item-tags">' + tags.join('') + '</div>'
+    + '</div></div>'
+    + '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" style="flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>'
+    + '</div>';
+}
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function renderEntries() {
+  const entries = await dbGetAll('entries');
+  const q = (document.getElementById('searchInput').value || '').toLowerCase();
+  const filtered = entries.filter(e =>
+    !q || (e.description || '').toLowerCase().includes(q) || String(e.kw).includes(q) || String(e.year).includes(q)
+  ).sort((a, b) => (b.year * 100 + b.kw) - (a.year * 100 + a.kw));
+
+  const c = document.getElementById('entriesContainer');
+  if (filtered.length === 0) {
+    c.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><p>' + (q ? 'Keine Berichte gefunden.' : 'Noch keine Berichte vorhanden.') + '</p>' + (!q ? '<button class="btn btn-primary" onclick="openEntryModal(null)">Ersten Bericht erstellen</button>' : '') + '</div>';
+  } else {
+    c.innerHTML = filtered.map(e => entryHTML(e)).join('');
+  }
+}
+
+// ===== Modal =====
+async function openEntryModal(id) {
+  currentEditId = id;
+  document.getElementById('deleteEntryBtn').style.display = id ? 'inline-flex' : 'none';
+  document.getElementById('modalTitle').textContent = id ? 'Bericht bearbeiten' : 'Neuer Bericht';
+
+  if (id) {
+    const entries = await dbGetAll('entries');
+    const e = entries.find(x => x.id === id);
+    if (e) {
+      document.getElementById('eKW').value = e.kw || '';
+      document.getElementById('eYear').value = e.year || '';
+      document.getElementById('eFrom').value = e.dateFrom || '';
+      document.getElementById('eTo').value = e.dateTo || '';
+      document.getElementById('eDescription').value = e.description || '';
+      document.getElementById('eHours').value = e.hours || '';
+      document.getElementById('eDaysBetrieb').value = e.daysBetrieb || 0;
+      document.getElementById('eDaysHome').value = e.daysHome || 0;
+      document.getElementById('eDaysSchool').value = e.daysSchool || 0;
+      document.getElementById('eDaysSick').value = e.daysSick || 0;
+      document.getElementById('eDaysVacation').value = e.daysVacation || 0;
+    }
+  } else {
+    document.getElementById('eKW').value = '';
+    document.getElementById('eYear').value = new Date().getFullYear();
+    document.getElementById('eFrom').value = '';
+    document.getElementById('eTo').value = '';
+    document.getElementById('eDescription').value = '';
+    document.getElementById('eHours').value = (profile && profile.weeklyHours) ? profile.weeklyHours : 40;
+    document.getElementById('eDaysBetrieb').value = 0;
+    document.getElementById('eDaysHome').value = 0;
+    document.getElementById('eDaysSchool').value = 0;
+    document.getElementById('eDaysSick').value = 0;
+    document.getElementById('eDaysVacation').value = 0;
+  }
+  document.getElementById('entryModal').classList.add('open');
+}
+function closeEntryModal() {
+  document.getElementById('entryModal').classList.remove('open');
+  currentEditId = null;
+}
+async function saveEntry() {
+  const kw = parseInt(document.getElementById('eKW').value);
+  const year = parseInt(document.getElementById('eYear').value);
+  if (!kw || kw < 1 || kw > 53) { toast('Bitte eine gültige Kalenderwoche (1–53) eingeben.', 'error'); return; }
+  if (!year || year < 2000) { toast('Bitte ein gültiges Jahr eingeben.', 'error'); return; }
+
+  const data = {
+    kw, year,
+    dateFrom: document.getElementById('eFrom').value,
+    dateTo: document.getElementById('eTo').value,
+    description: document.getElementById('eDescription').value.trim(),
+    hours: parseFloat(document.getElementById('eHours').value) || 0,
+    daysBetrieb: parseFloat(document.getElementById('eDaysBetrieb').value) || 0,
+    daysHome: parseFloat(document.getElementById('eDaysHome').value) || 0,
+    daysSchool: parseFloat(document.getElementById('eDaysSchool').value) || 0,
+    daysSick: parseFloat(document.getElementById('eDaysSick').value) || 0,
+    daysVacation: parseFloat(document.getElementById('eDaysVacation').value) || 0,
+    updatedAt: new Date().toISOString(),
+  };
+  if (currentEditId) data.id = currentEditId;
+
+  await dbPut('entries', data);
+  closeEntryModal();
+  toast(currentEditId ? 'Bericht aktualisiert!' : 'Bericht gespeichert!', 'success');
+  renderEntries();
+  renderDashboard();
+}
+async function deleteCurrentEntry() {
+  const ok = await showConfirm('Bericht löschen?', 'Dieser Bericht wird unwiderruflich gelöscht. Fortfahren?', '🗑️', 'Löschen', 'btn-danger');
+  if (!ok) return;
+  await dbDelete('entries', currentEditId);
+  closeEntryModal();
+  toast('Bericht gelöscht.', '');
+  renderEntries();
+  renderDashboard();
+}
+
+// ===== KW <-> Datum Synchronisation =====
+let _syncLock = false;
+
+function onKWOrYearChange() {
+  if (_syncLock) return;
+  const kw = parseInt(document.getElementById('eKW').value);
+  const year = parseInt(document.getElementById('eYear').value);
+  if (!kw || kw < 1 || kw > 53 || !year || year < 2000) return;
+  _syncLock = true;
+  const monday = getMondayOfKW(kw, year);
+  const friday = new Date(monday);
+  friday.setUTCDate(friday.getUTCDate() + 4);
+  document.getElementById('eFrom').value = toInputDate(monday);
+  document.getElementById('eTo').value = toInputDate(friday);
+  _syncLock = false;
+}
+
+function onDateFromChange() {
+  if (_syncLock) return;
+  const val = document.getElementById('eFrom').value;
+  if (!val) return;
+  _syncLock = true;
+  const d = new Date(val + 'T00:00:00');
+  const kw = getISOWeek(d);
+  const year = getISOWeekYear(d);
+  document.getElementById('eKW').value = kw;
+  document.getElementById('eYear').value = year;
+  // Setzt Freitag der gleichen Woche
+  const monday = getMondayOfKW(kw, year);
+  const friday = new Date(monday);
+  friday.setUTCDate(friday.getUTCDate() + 4);
+  document.getElementById('eTo').value = toInputDate(friday);
+  _syncLock = false;
+}
+
+function onDateToChange() {
+  if (_syncLock) return;
+  const val = document.getElementById('eTo').value;
+  if (!val) return;
+  _syncLock = true;
+  const d = new Date(val + 'T00:00:00');
+  const kw = getISOWeek(d);
+  const year = getISOWeekYear(d);
+  document.getElementById('eKW').value = kw;
+  document.getElementById('eYear').value = year;
+  // Setzt Montag der gleichen Woche, wenn "Von" leer ist
+  if (!document.getElementById('eFrom').value) {
+    const monday = getMondayOfKW(kw, year);
+    document.getElementById('eFrom').value = toInputDate(monday);
+  }
+  _syncLock = false;
+}
+
+// Gibt das ISO-Jahr (kann vom Kalenderjahr abweichen, z.B. KW1 in Dez)
+function getISOWeekYear(date) {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+  return d.getUTCFullYear();
+}
+
+// ===== Auto KW =====
+function autoFillKW() {
+  const now = new Date();
+  const kw = getISOWeek(now);
+  const year = now.getFullYear();
+  currentEditId = null;
+  document.getElementById('deleteEntryBtn').style.display = 'none';
+  document.getElementById('modalTitle').textContent = 'Neuer Bericht';
+  document.getElementById('eKW').value = kw;
+  document.getElementById('eYear').value = year;
+  const monday = getMondayOfKW(kw, year);
+  const friday = new Date(monday);
+  friday.setUTCDate(friday.getUTCDate() + 4);
+  document.getElementById('eFrom').value = toInputDate(monday);
+  document.getElementById('eTo').value = toInputDate(friday);
+  document.getElementById('eDescription').value = '';
+  document.getElementById('eHours').value = (profile && profile.weeklyHours) ? profile.weeklyHours : 40;
+  document.getElementById('eDaysBetrieb').value = 0;
+  document.getElementById('eDaysHome').value = 0;
+  document.getElementById('eDaysSchool').value = 0;
+  document.getElementById('eDaysSick').value = 0;
+  document.getElementById('eDaysVacation').value = 0;
+  document.getElementById('entryModal').classList.add('open');
+}
+
+// ===== Export =====
+async function exportData() {
+  const p = (await dbGet('profile', 'main')) || {};
+  const entries = await dbGetAll('entries');
+  const blob = new Blob([JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), profile: p, entries }, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'berichtsheft_' + new Date().toISOString().split('T')[0] + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('Export erfolgreich! (' + entries.length + ' Berichte)', 'success');
+}
+
+// ===== Import =====
+async function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  event.target.value = '';
+
+  const ok = await showConfirm(
+    'Daten importieren?',
+    'Alle vorhandenen Daten (Stammdaten und alle Berichte) werden durch die importierten Daten überschrieben. Diese Aktion kann nicht rückgängig gemacht werden.',
+    '📥', 'Ja, importieren', 'btn-primary'
+  );
+  if (!ok) return;
+
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    if (!data.version || !Array.isArray(data.entries)) throw new Error('Ungültiges Dateiformat');
+
+    await dbClear('entries');
+    await dbClear('profile');
+
+    if (data.profile) await dbPut('profile', { id: 'main', ...data.profile });
+
+    for (const entry of data.entries) {
+      const { id, ...rest } = entry;
+      await dbPut('entries', rest);
+    }
+
+    profile = (await dbGet('profile', 'main')) || {};
+    toast('Import erfolgreich! ' + data.entries.length + ' Berichte importiert.', 'success');
+    renderDashboard();
+    renderEntries();
+  } catch (e) {
+    toast('Fehler beim Importieren: ' + e.message, 'error');
+  }
+}
+
+// ===== PDF Download =====
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector('script[src="' + src + '"]')) { resolve(); return; }
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+async function printReports(filtered) {
+  profile = (await dbGet('profile', 'main')) || {};
+  let entries = await dbGetAll('entries');
+
+  if (filtered) {
+    const from = parseInt(document.getElementById('printFrom').value) || 1;
+    const to = parseInt(document.getElementById('printTo').value) || 53;
+    const year = parseInt(document.getElementById('printYear').value) || 0;
+    entries = entries.filter(e => {
+      if (year && e.year !== year) return false;
+      return e.kw >= from && e.kw <= to;
+    });
+  }
+
+  entries.sort((a, b) => (a.year * 100 + a.kw) - (b.year * 100 + b.kw));
+  if (entries.length === 0) { toast('Keine Berichte für den gewählten Zeitraum gefunden.', 'error'); return; }
+
+  toast('PDF wird erstellt…');
+
+  try {
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js');
+  } catch(e) {
+    toast('Bibliothek konnte nicht geladen werden. Bitte Internetverbindung prüfen.', 'error');
+    return;
+  }
+
+  const fullName = ((profile.firstName || '') + ' ' + (profile.lastName || '')).trim() || 'Alexander Wiese';
+  const pages = entries.map((e, i) => buildPrintPage(e, profile, fullName, i + 1, entries.length)).join('');
+
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = pages;
+  wrapper.style.cssText = 'position:absolute;left:-9999px;top:0;';
+  document.body.appendChild(wrapper);
+
+  const filename = 'Berichtsheft_' + fullName.replace(/ /g, '_') + '_' + new Date().toISOString().split('T')[0] + '.pdf';
+
+  const opt = {
+    margin: 0,
+    filename: filename,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak: { mode: ['css', 'legacy'], before: '.print-page' }
+  };
+
+  try {
+    await html2pdf().set(opt).from(wrapper).save();
+    toast('PDF erfolgreich heruntergeladen!', 'success');
+  } catch(e) {
+    toast('Fehler beim PDF-Erstellen: ' + e.message, 'error');
+  } finally {
+    document.body.removeChild(wrapper);
+  }
+}
+
+function buildPrintPage(e, p, fullName, pageNum, total) {
+  const dateRange = (e.dateFrom && e.dateTo) ? fmtDate(e.dateFrom) + ' – ' + fmtDate(e.dateTo) : '–';
+  const birthdate = p.birthdate ? fmtDate(p.birthdate) : '–';
+  const desc = (e.description || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+
+  const s = {
+    page: 'background:#fff;padding:15mm 18mm 20mm;font-family:Times New Roman,serif;font-size:10pt;color:#000;width:210mm;min-height:267mm;position:relative;box-sizing:border-box;page-break-after:always;',
+    header: 'margin-bottom:5mm;border-bottom:0.5pt solid #000;padding-bottom:3mm;',
+    title: 'font-size:14pt;font-weight:bold;',
+    subtitle: 'font-size:10pt;color:#444;',
+    table: 'width:100%;border-collapse:collapse;margin-bottom:4mm;',
+    tdLabel: 'padding:2mm 3mm;border:0.5pt solid #999;font-size:9.5pt;font-weight:bold;background:#f5f5f5;width:22%;vertical-align:top;',
+    tdValue: 'padding:2mm 3mm;border:0.5pt solid #999;font-size:9.5pt;vertical-align:top;',
+    desc: 'border:0.5pt solid #999;padding:3mm;min-height:45mm;font-size:9.5pt;margin-bottom:4mm;white-space:pre-wrap;',
+    thCell: 'background:#e8e8e8;border:0.5pt solid #999;padding:2mm;font-size:9pt;text-align:center;',
+    tdCell: 'border:0.5pt solid #999;padding:2mm;text-align:center;font-size:9.5pt;',
+    confirm: 'border:0.5pt solid #000;padding:4mm;font-size:9pt;margin-bottom:6mm;line-height:1.5;background:#fafafa;',
+    sigRow: 'display:flex;justify-content:space-between;margin-top:8mm;',
+    sigBox: 'width:45%;',
+    sigLine: 'border-bottom:0.5pt solid #000;height:12mm;margin-bottom:2mm;',
+    sigLabel: 'font-size:8.5pt;color:#444;',
+    sigName: 'font-size:8.5pt;color:#222;margin-top:1mm;',
+    footer: 'text-align:center;font-size:8pt;color:#777;border-top:0.5pt solid #ccc;padding-top:2mm;margin-top:8mm;',
+  };
+
+  return '<div style="' + s.page + '">'
+    + '<div style="' + s.header + '">'
+    + '<div style="' + s.title + '">Ausbildungsnachweis</div>'
+    + '<div style="' + s.subtitle + '">gemäß § 43 Berufsbildungsgesetz (BBiG) – Wochenbericht</div>'
+    + '</div>'
+    + '<table style="' + s.table + '">'
+    + '<tr><td style="' + s.tdLabel + '">Name Auszubildende/r</td><td style="' + s.tdValue + '">' + fullName + '</td><td style="' + s.tdLabel + '">Geburtsdatum</td><td style="' + s.tdValue + '">' + birthdate + '</td></tr>'
+    + '<tr><td style="' + s.tdLabel + '">Ausbildungsbetrieb</td><td style="' + s.tdValue + '">' + (p.company || '–') + '</td><td style="' + s.tdLabel + '">Ausbilder/in</td><td style="' + s.tdValue + '">' + (p.ausbilder || '–') + '</td></tr>'
+    + '<tr><td style="' + s.tdLabel + '">Ausbildungsberuf</td><td style="' + s.tdValue + '">' + (p.profession || '–') + '</td><td style="' + s.tdLabel + '">Ausbildungsdauer</td><td style="' + s.tdValue + '">' + (p.startDate ? fmtDate(p.startDate) : '–') + ' bis ' + (p.endDate ? fmtDate(p.endDate) : '–') + '</td></tr>'
+    + '<tr><td style="' + s.tdLabel + '">Berichtszeitraum</td><td style="' + s.tdValue + '">' + dateRange + '</td><td style="' + s.tdLabel + '">Kalenderwoche</td><td style="' + s.tdValue + '"><strong>KW ' + e.kw + ' / ' + e.year + '</strong></td></tr>'
+    + '</table>'
+    + '<div style="font-size:9pt;font-weight:bold;margin-bottom:3mm;margin-top:3mm;">Beschreibung der Tätigkeiten:</div>'
+    + '<div style="' + s.desc + '">' + desc + '</div>'
+    + '<table style="' + s.table + '">'
+    + '<thead><tr>'
+    + '<th style="' + s.thCell + '">Betrieb (Tage)</th>'
+    + '<th style="' + s.thCell + '">Homeoffice (Tage)</th>'
+    + '<th style="' + s.thCell + '">Berufsschule (Tage)</th>'
+    + '<th style="' + s.thCell + '">Krank (Tage)</th>'
+    + '<th style="' + s.thCell + '">Urlaub (Tage)</th>'
+    + '<th style="' + s.thCell + '">Stunden gesamt</th>'
+    + '</tr></thead>'
+    + '<tbody><tr>'
+    + '<td style="' + s.tdCell + '">' + (e.daysBetrieb || 0) + '</td>'
+    + '<td style="' + s.tdCell + '">' + (e.daysHome || 0) + '</td>'
+    + '<td style="' + s.tdCell + '">' + (e.daysSchool || 0) + '</td>'
+    + '<td style="' + s.tdCell + '">' + (e.daysSick || 0) + '</td>'
+    + '<td style="' + s.tdCell + '">' + (e.daysVacation || 0) + '</td>'
+    + '<td style="' + s.tdCell + '"><strong>' + (e.hours || 0) + '</strong></td>'
+    + '</tr></tbody></table>'
+    + '<div style="' + s.confirm + '">'
+    + '<strong>Bestätigung gemäß § 43 BBiG:</strong><br>'
+    + 'Hiermit bestätigen wir, dass ' + fullName + ' die gemäß § 43 Berufsbildungsgesetz erforderlichen Ausbildungsnachweise eigenhändig, ohne fremde Hilfe und vollständig erstellt hat. Diese Erklärung dient der Vorlage beim zuständigen Prüfungsausschuss.'
+    + '</div>'
+    + '<div style="' + s.sigRow + '">'
+    + '<div style="' + s.sigBox + '"><div style="' + s.sigLine + '"></div><div style="' + s.sigLabel + '">Datum, Unterschrift Auszubildende/r</div><div style="' + s.sigName + '">' + fullName + '</div></div>'
+    + '<div style="' + s.sigBox + '"><div style="' + s.sigLine + '"></div><div style="' + s.sigLabel + '">Datum, Unterschrift Ausbilder/in</div><div style="' + s.sigName + '">' + (p.ausbilder || '–') + '</div></div>'
+    + '</div>'
+    + '<div style="' + s.footer + '">' + (p.company || '') + ' &nbsp;·&nbsp; KW ' + e.kw + ' / ' + e.year + ' &nbsp;·&nbsp; Seite ' + pageNum + ' von ' + total + '</div>'
+    + '</div>';
+}
+
+// ===== Close modal on outside click =====
+document.getElementById('entryModal').addEventListener('click', function(e) { if (e.target === this) closeEntryModal(); });
+
+// ===== Init =====
+initDB().then(async () => {
+  profile = (await dbGet('profile', 'main')) || {};
+  renderDashboard();
+}).catch(err => toast('Datenbankfehler: ' + err.message, 'error'));
+</script>
+</body>
+</html>
