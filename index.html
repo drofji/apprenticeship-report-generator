@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Berichtsheft Generator</title>
+<title>Apprenticeship Report Generator</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -143,6 +143,14 @@ textarea { resize: vertical; min-height: 80px; }
 .app-footer .sep { margin: 0 8px; color: #c0bdb5; }
 /* Toast */
 .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+.progress-toast {
+  background: #191919; color: #ffffff; padding: 14px 18px; border-radius: 8px; font-size: 13px;
+  font-weight: 500; box-shadow: 0 4px 16px rgba(0,0,0,0.2); min-width: 240px;
+  animation: slideIn 0.2s ease;
+}
+.progress-toast-title { margin-bottom: 6px; display:flex; align-items:center; gap:8px; }
+.progress-toast-bar-wrap { background: rgba(255,255,255,0.2); border-radius:10px; height:5px; overflow:hidden; }
+.progress-toast-bar { height:5px; background:#4caf8f; border-radius:10px; transition:width 0.25s ease; }
 .toast { background: #191919; color: #ffffff; padding: 12px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; box-shadow: 0 4px 16px rgba(0,0,0,0.2); animation: slideIn 0.2s ease; min-width: 200px; }
 .toast.success { background: #057642; }
 .toast.error { background: #cc1016; }
@@ -307,8 +315,8 @@ textarea { resize: vertical; min-height: 80px; }
         </div>
         <div class="mode-card" id="modeCardCompact" onclick="setPrintMode('compact')">
           <div class="mode-card-icon">&#x1F4CA;</div>
-          <div class="mode-card-title">Kompakt — Mehrere Wochen pro Seite</div>
-          <div class="mode-card-desc">Platzsparende Übersichtstabelle. Ideal für Quartalsnachweise, interne Reviews oder eine schnelle Gesamtübersicht. Beschreibungen werden gekürzt dargestellt.</div>
+          <div class="mode-card-title">Kompakt — Offiziell &amp; platzsparend</div>
+          <div class="mode-card-desc">Mehrere Wochen pro Seite — mit vollständiger Beschreibung, § 43 BBiG-Bestätigung und Unterschriftsfeldern. Geeignet als offizieller Abgabenachweis beim Prüfungsausschuss.</div>
         </div>
       </div>
 
@@ -323,13 +331,15 @@ textarea { resize: vertical; min-height: 80px; }
 
         <div id="compactOptions" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid #f0efec;">
           <div class="form-group">
-            <label>Wochen pro Seite</label>
+            <label>Wochen pro Seite <span style="font-size:11px;color:#666;text-transform:none;">(mehr = kompakter, aber vollständige Texte)</span></label>
             <select id="weeksPerPage">
+              <option value="2">2 Wochen</option>
+              <option value="3">3 Wochen</option>
               <option value="4">4 Wochen (ca. 1 Monat)</option>
+              <option value="5">5 Wochen</option>
               <option value="6" selected>6 Wochen</option>
+              <option value="7">7 Wochen</option>
               <option value="8">8 Wochen (ca. 2 Monate)</option>
-              <option value="13">13 Wochen (1 Quartal)</option>
-              <option value="26">26 Wochen (1 Halbjahr)</option>
             </select>
           </div>
         </div>
@@ -349,7 +359,7 @@ textarea { resize: vertical; min-height: 80px; }
           Jeder Bericht wird auf einer eigenen A4-Seite ausgegeben. Der Bestätigungstext gemäß § 43 BBiG sowie Unterschriftsfelder für Sie und Ihren Ausbilder sind auf jedem Blatt enthalten. <strong>Geeignet für die offizielle Abgabe beim Prüfungsausschuss.</strong>
         </div>
         <div id="printHintCompact" style="display:none;font-size:13px;color:#444;line-height:1.6;">
-          Mehrere Wochen werden platzsparend als Übersichtstabelle zusammengefasst. Beschreibungen werden auf 60 Zeichen gekürzt. <strong>Nicht geeignet als offizieller Abgabenachweis gemäß § 43 BBiG.</strong>
+          Mehrere Wochen pro Seite — mit vollständiger Beschreibung, § 43 BBiG-Bestätigung und Unterschriftsfeldern. <strong>Geeignet als offizieller Abgabenachweis beim Prüfungsausschuss.</strong>
         </div>
       </div>
     </div>
@@ -368,6 +378,28 @@ textarea { resize: vertical; min-height: 80px; }
 </footer>
 </div>
 
+
+<!-- Progress Modal -->
+<div id="pdfProgressModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:3000;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:12px;padding:32px 36px;max-width:440px;width:92%;box-shadow:0 8px 40px rgba(0,0,0,0.22);text-align:center;">
+    <div style="font-size:28px;margin-bottom:12px;">📄</div>
+    <div style="font-size:17px;font-weight:700;color:#191919;margin-bottom:6px;" id="pdfModalTitle">PDF wird erstellt…</div>
+    <div style="font-size:13px;color:#666;margin-bottom:18px;" id="pdfModalStatus">Seite 1 von …</div>
+    <div style="background:#f0efec;border-radius:20px;height:10px;width:100%;margin-bottom:22px;overflow:hidden;">
+      <div id="pdfProgressBar" style="height:10px;width:0%;background:#0a66c2;border-radius:20px;transition:width 0.2s ease;"></div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:center;">
+      <button class="btn btn-ghost" onclick="pdfMinimize()" style="font-size:13px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+        In den Hintergrund
+      </button>
+      <button class="btn btn-danger btn-sm" onclick="pdfAbort()" style="font-size:13px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        Abbrechen
+      </button>
+    </div>
+  </div>
+</div>
 <!-- Print Container -->
 <div id="printContainer" style="display:none;"></div>
 
@@ -865,8 +897,79 @@ async function renderPageToCanvas(html) {
   return canvas;
 }
 
+// ===== PDF progress helpers =====
+let _pdfMinimized = false;
+let _progressToastEl = null;
+let _pdfAbortController = null;   // AbortController for cancellation
+let _pdfRunning = false;           // true while a PDF is being generated
+
+function pdfShowModal(total) {
+  _pdfMinimized = false;
+  const m = document.getElementById('pdfProgressModal');
+  m.style.display = 'flex';
+  document.getElementById('pdfModalTitle').textContent = 'PDF wird erstellt…';
+  document.getElementById('pdfModalStatus').textContent = 'Seite 1 von ' + total;
+  document.getElementById('pdfProgressBar').style.width = '0%';
+}
+
+function pdfUpdateProgress(current, total) {
+  const pct = Math.round((current / total) * 100);
+  if (!_pdfMinimized) {
+    document.getElementById('pdfModalStatus').textContent = 'Seite ' + current + ' von ' + total;
+    document.getElementById('pdfProgressBar').style.width = pct + '%';
+  }
+  if (_progressToastEl) {
+    _progressToastEl.querySelector('.progress-toast-bar').style.width = pct + '%';
+    _progressToastEl.querySelector('.pt-status').textContent = 'Seite ' + current + ' von ' + total;
+  }
+}
+
+function pdfMinimize() {
+  _pdfMinimized = true;
+  document.getElementById('pdfProgressModal').style.display = 'none';
+  // Create (or reuse) persistent progress toast with stop button
+  if (_progressToastEl) return;
+  const container = document.getElementById('toastContainer');
+  const el = document.createElement('div');
+  el.className = 'progress-toast';
+  el.innerHTML =
+    `<div class="progress-toast-title" style="justify-content:space-between;">
+       <span>📄 PDF wird generiert…</span>
+       <button onclick="pdfAbort()" style="background:none;border:none;color:#ff6b6b;cursor:pointer;font-size:18px;line-height:1;padding:0;" title="Abbrechen">✕</button>
+     </div>
+     <div class="pt-status" style="font-size:11px;color:#aaa;margin-bottom:7px;">Seite 1 von …</div>
+     <div class="progress-toast-bar-wrap"><div class="progress-toast-bar" style="width:0%"></div></div>`;
+  container.appendChild(el);
+  _progressToastEl = el;
+}
+
+function pdfAbort() {
+  if (_pdfAbortController) _pdfAbortController.abort();
+}
+
+function pdfHideProgress() {
+  document.getElementById('pdfProgressModal').style.display = 'none';
+  if (_progressToastEl) { _progressToastEl.remove(); _progressToastEl = null; }
+  _pdfMinimized = false;
+  _pdfRunning = false;
+  _pdfAbortController = null;
+}
+
 // ===== PDF: main =====
 async function printReports(filtered) {
+  // If a PDF is already being generated, ask user whether to stop it
+  if (_pdfRunning) {
+    const ok = await showConfirm(
+      'Aktive Generierung läuft',
+      'Eine PDF-Generierung ist bereits aktiv. Soll sie abgebrochen und eine neue gestartet werden?',
+      '⚠️', 'Ja, neu starten', 'btn-danger'
+    );
+    if (!ok) return;
+    pdfAbort();
+    // Give abort a tick to propagate before starting fresh
+    await new Promise(r => setTimeout(r, 80));
+  }
+
   profile = (await dbGet('profile','main'))||{};
   let entries = await dbGetAll('entries');
   if (filtered) {
@@ -878,34 +981,58 @@ async function printReports(filtered) {
   entries.sort((a,b)=>(a.year*100+a.kw)-(b.year*100+b.kw));
   if (entries.length===0) { toast('Keine Berichte für diesen Zeitraum gefunden.','error'); return; }
 
-  toast('PDF wird erstellt… bitte warten.');
   try { await loadPdfLibs(); } catch(e) { toast('Bibliothek nicht ladbar. Internetverbindung prüfen.','error'); return; }
+
+  // Create a fresh abort controller for this run
+  _pdfAbortController = new AbortController();
+  const signal = _pdfAbortController.signal;
+  _pdfRunning = true;
 
   const fullName = ((profile.firstName||'')+ ' '+(profile.lastName||'')).trim()||'Alexander Wiese';
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit:'mm', format:'a4', orientation:'portrait' });
 
-  if (currentPrintMode === 'full') {
-    // ---- DETAILED MODE: one entry per page ----
-    for (let i = 0; i < entries.length; i++) {
-      const html = buildPageDetailed(entries[i], profile, fullName, i+1, entries.length);
-      const canvas = await renderPageToCanvas(html);
-      if (i > 0) doc.addPage();
-      doc.addImage(canvas.toDataURL('image/jpeg',0.97), 'JPEG', 0, 0, 210, 297);
+  try {
+    if (currentPrintMode === 'full') {
+      // ---- DETAILED MODE: one entry per page ----
+      const total = entries.length;
+      pdfShowModal(total);
+      for (let i = 0; i < total; i++) {
+        if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
+        pdfUpdateProgress(i + 1, total);
+        const html = buildPageDetailed(entries[i], profile, fullName, i+1, total);
+        const canvas = await renderPageToCanvas(html);
+        if (i > 0) doc.addPage();
+        doc.addImage(canvas.toDataURL('image/jpeg',0.97), 'JPEG', 0, 0, 210, 297);
+      }
+    } else {
+      // ---- COMPACT MODE: N entries per page ----
+      const perPage = parseInt(document.getElementById('weeksPerPage').value)||6;
+      const chunks = [];
+      for (let i=0; i<entries.length; i+=perPage) chunks.push(entries.slice(i, i+perPage));
+      const total = chunks.length;
+      pdfShowModal(total);
+      for (let ci=0; ci<total; ci++) {
+        if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
+        pdfUpdateProgress(ci + 1, total);
+        const startIndex = ci * perPage;
+        const html = buildPageCompact(chunks[ci], profile, fullName, ci+1, total, startIndex);
+        const canvas = await renderPageToCanvas(html);
+        if (ci > 0) doc.addPage();
+        doc.addImage(canvas.toDataURL('image/jpeg',0.97), 'JPEG', 0, 0, 210, 297);
+      }
     }
-  } else {
-    // ---- COMPACT MODE: N entries per page ----
-    const perPage = parseInt(document.getElementById('weeksPerPage').value)||6;
-    const chunks = [];
-    for (let i=0; i<entries.length; i+=perPage) chunks.push(entries.slice(i, i+perPage));
-    for (let ci=0; ci<chunks.length; ci++) {
-      const html = buildPageCompact(chunks[ci], profile, fullName, ci+1, chunks.length);
-      const canvas = await renderPageToCanvas(html);
-      if (ci > 0) doc.addPage();
-      doc.addImage(canvas.toDataURL('image/jpeg',0.97), 'JPEG', 0, 0, 210, 297);
+  } catch (err) {
+    pdfHideProgress();
+    if (err.name === 'AbortError') {
+      toast('PDF-Generierung abgebrochen.', '');
+    } else {
+      toast('Fehler bei der PDF-Generierung: ' + err.message, 'error');
     }
+    return;
   }
 
+  pdfHideProgress();
   const suffix = currentPrintMode === 'compact' ? '_kompakt' : '_detailliert';
   doc.save('Berichtsheft_' + fullName.replace(/ /g,'_') + suffix + '_' + new Date().toISOString().split('T')[0] + '.pdf');
   toast('PDF heruntergeladen! (' + entries.length + ' Berichte)', 'success');
@@ -935,10 +1062,10 @@ function buildPageDetailed(e, p, fullName, pageNum, total) {
   <div style="border:1px solid #aaa;padding:10px;min-height:175px;font-size:12px;line-height:1.6;word-break:break-word;margin-bottom:12px;">${desc}</div>
   <table style="width:100%;border-collapse:collapse;margin-bottom:12px;">
     <thead><tr>
-      <th style="${th}">Betrieb<br>(Tage)</th><th style="${th}">Homeoffice<br>(Tage)</th><th style="${th}">Berufsschule<br>(Tage)</th><th style="${th}">Krank<br>(Tage)</th><th style="${th}">Urlaub<br>(Tage)</th><th style="${th}">Std.<br>Betrieb/HO</th><th style="${th}">Std.<br>Schule</th><th style="${th}">Std.<br>gesamt</th>
+      <th style="${th}">Betrieb<br>(Tage)</th><th style="${th}">Homeoffice<br>(Tage)</th><th style="${th}">Berufsschule<br>(Tage)</th><th style="${th}">Krank<br>(Tage)</th><th style="${th}">Urlaub<br>(Tage)</th><th style="${th}">Stunden<br>Betrieb/HO</th>${(e.hoursSchool||0)>0?`<th style="${th}">Stunden<br>Schule</th><th style="${th}">Stunden<br>gesamt</th>`:`<th style="${th}">Stunden<br>gesamt</th>`}
     </tr></thead>
     <tbody><tr>
-      <td style="${td}">${e.daysBetrieb||0}</td><td style="${td}">${e.daysHome||0}</td><td style="${td}">${e.daysSchool||0}</td><td style="${td}">${e.daysSick||0}</td><td style="${td}">${e.daysVacation||0}</td><td style="${td}">${e.hoursBetrieb||0}</td><td style="${td}">${e.hoursSchool||0}</td><td style="${td}"><strong>${e.hours||0}</strong></td>
+      <td style="${td}">${e.daysBetrieb||0}</td><td style="${td}">${e.daysHome||0}</td><td style="${td}">${e.daysSchool||0}</td><td style="${td}">${e.daysSick||0}</td><td style="${td}">${e.daysVacation||0}</td><td style="${td}">${e.hoursBetrieb||0}</td>${(e.hoursSchool||0)>0?`<td style="${td}">${e.hoursSchool}</td><td style="${td}"><strong>${e.hours||0}</strong></td>`:`<td style="${td}"><strong>${e.hoursBetrieb||0}</strong></td>`}
     </tr></tbody>
   </table>
   <div style="border:1px solid #000;padding:11px;font-size:11px;line-height:1.6;background:#fafafa;margin-bottom:22px;">
@@ -955,120 +1082,129 @@ function buildPageDetailed(e, p, fullName, pageNum, total) {
 </div>`;
 }
 
-// ===== PDF: compact page template =====
-function buildPageCompact(entries, p, fullName, pageNum, totalPages) {
+// ===== PDF: compact page template — official §43 BBiG, multiple weeks per page =====
+function buildPageCompact(entries, p, fullName, pageNum, totalPages, startIndex) {
   const bd = p.birthdate ? fmtDate(p.birthdate) : '–';
-  const th = 'background:#1a1a2e;color:#fff;border:1px solid #333;padding:5px 4px;text-align:center;font-size:10px;white-space:nowrap;';
-  const thL = 'background:#1a1a2e;color:#fff;border:1px solid #333;padding:5px 6px;text-align:left;font-size:10px;white-space:nowrap;';
-  const tdC = 'border:1px solid #ccc;padding:4px;text-align:center;font-size:10px;vertical-align:top;';
-  const tdL = 'border:1px solid #ccc;padding:4px 6px;font-size:10px;vertical-align:top;';
-  const tdAlt = 'border:1px solid #ccc;padding:4px;text-align:center;font-size:10px;vertical-align:top;background:#fafafa;';
-  const tdLAlt = 'border:1px solid #ccc;padding:4px 6px;font-size:10px;vertical-align:top;background:#fafafa;';
+  const periodStr = entries.length
+    ? 'KW ' + entries[0].kw + ' – KW ' + entries[entries.length-1].kw + ' / ' + entries[entries.length-1].year
+    : '';
 
-  const firstE = entries[0]; const lastE = entries[entries.length-1];
-  const periodStr = firstE && lastE ? 'KW '+firstE.kw+' – KW '+lastE.kw+' / '+lastE.year : '';
+  // Check if ANY entry on this page has school hours
+  const hasSchool = entries.some(e => (parseFloat(e.hoursSchool)||0) > 0);
 
-  const rows = entries.map((e, i) => {
-    const alt = i % 2 === 1;
-    const tdCi = alt ? tdAlt : tdC;
-    const tdLi = alt ? tdLAlt : tdL;
-    const dr = (e.dateFrom&&e.dateTo) ? fmtDate(e.dateFrom)+' – '+fmtDate(e.dateTo) : '–';
-    const shortDesc = e.description ? escHtml(e.description.substring(0,65)) + (e.description.length>65?'…':'') : '–';
-    return `<tr>
-      <td style="${tdCi}"><strong>KW ${e.kw}</strong><br><span style="font-size:9px;color:#777;">${e.year}</span></td>
-      <td style="${tdCi}" >${dr}</td>
-      <td style="${tdLi}">${shortDesc}</td>
-      <td style="${tdCi}">${e.daysBetrieb||0}</td>
-      <td style="${tdCi}">${e.daysHome||0}</td>
-      <td style="${tdCi}">${e.daysSchool||0}</td>
-      <td style="${tdCi}">${e.daysSick||0}</td>
-      <td style="${tdCi}">${e.daysVacation||0}</td>
-      <td style="${tdCi}">${e.hoursBetrieb||0}</td>
-      <td style="${tdCi}">${e.hoursSchool||0}</td>
-      <td style="${tdCi}"><strong>${e.hours||0}</strong></td>
-    </tr>`;
+  const thS  = 'background:#1f3a5f;color:#fff;border:1px solid #1a3354;padding:4px 3px;text-align:center;font-size:9px;white-space:nowrap;font-weight:700;';
+  const thSL = 'background:#1f3a5f;color:#fff;border:1px solid #1a3354;padding:4px 6px;text-align:left;font-size:9px;font-weight:700;';
+  const td1s = 'padding:3px 7px;border:1px solid #ccc;font-weight:bold;background:#f0f2f5;font-size:9px;white-space:nowrap;vertical-align:middle;';
+  const td2s = 'padding:3px 7px;border:1px solid #ccc;font-size:9px;vertical-align:middle;';
+
+  // Build one "week block" = header row (KW/meta) + attendance row + description
+  const weekBlocks = entries.map((e, i) => {
+    const dr = (e.dateFrom && e.dateTo) ? fmtDate(e.dateFrom) + ' – ' + fmtDate(e.dateTo) : '–';
+    const desc = e.description ? escHtml(e.description).replace(/\n/g, '<br>') : '–';
+    const rowBg = i % 2 === 0 ? '#fff' : '#f7f9fc';
+    const rowBgD = i % 2 === 0 ? '#fafcff' : '#f0f4f9';
+    const workHours = (e.hoursBetrieb || 0);
+    const schoolHours = (e.hoursSchool || 0);
+    const totalHours = (e.hours || workHours);
+
+    const hoursCell = hasSchool
+      ? `<td style="border:1px solid #c8c8c8;padding:3px 4px;text-align:center;font-size:8.5px;background:${rowBg};">${workHours}</td>
+         <td style="border:1px solid #c8c8c8;padding:3px 4px;text-align:center;font-size:8.5px;background:${rowBg};">${schoolHours > 0 ? schoolHours : '–'}</td>
+         <td style="border:1px solid #c8c8c8;padding:3px 4px;text-align:center;font-size:8.5px;background:${rowBg};font-weight:700;">${totalHours}</td>`
+      : `<td style="border:1px solid #c8c8c8;padding:3px 4px;text-align:center;font-size:8.5px;background:${rowBg};font-weight:700;">${workHours}</td>`;
+
+    const hoursHeader = hasSchool
+      ? `<th style="${thS}">Stunden<br>Arbeit</th><th style="${thS}">Stunden<br>Schule</th><th style="${thS}">Stunden<br>gesamt</th>`
+      : `<th style="${thS}">Stunden</th>`;
+
+    return `
+    <!-- Week ${e.kw}/${e.year} -->
+    <div style="margin-bottom:6px;border:1px solid #c8d0dc;border-radius:3px;overflow:hidden;page-break-inside:avoid;">
+      <!-- KW header bar -->
+      <div style="background:#1f3a5f;color:#fff;display:flex;align-items:center;padding:4px 8px;gap:12px;">
+        <span style="font-size:11px;font-weight:700;white-space:nowrap;">KW ${e.kw} / ${e.year}</span>
+        <span style="font-size:9px;opacity:0.85;">${dr}</span>
+        <span style="margin-left:auto;font-size:9px;opacity:0.7;">Ausbildungswoche ${startIndex + i + 1}</span>
+      </div>
+      <!-- Attendance table -->
+      <table style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr>
+            <th style="${thS}">Betrieb<br>Tage</th>
+            <th style="${thS}">Homeoffice<br>Tage</th>
+            <th style="${thS}">Schule<br>Tage</th>
+            <th style="${thS}">Krank<br>Tage</th>
+            <th style="${thS}">Urlaub<br>Tage</th>
+            ${hoursHeader}
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="border:1px solid #c8c8c8;padding:3px 4px;text-align:center;font-size:8.5px;background:${rowBg};">${e.daysBetrieb||0}</td>
+            <td style="border:1px solid #c8c8c8;padding:3px 4px;text-align:center;font-size:8.5px;background:${rowBg};">${e.daysHome||0}</td>
+            <td style="border:1px solid #c8c8c8;padding:3px 4px;text-align:center;font-size:8.5px;background:${rowBg};">${e.daysSchool||0}</td>
+            <td style="border:1px solid #c8c8c8;padding:3px 4px;text-align:center;font-size:8.5px;background:${rowBg};">${e.daysSick||0}</td>
+            <td style="border:1px solid #c8c8c8;padding:3px 4px;text-align:center;font-size:8.5px;background:${rowBg};">${e.daysVacation||0}</td>
+            ${hoursCell}
+          </tr>
+        </tbody>
+      </table>
+      <!-- Description -->
+      <div style="padding:5px 8px;font-size:8.5px;line-height:1.5;color:#111;background:${rowBgD};word-break:break-word;">
+        ${desc}
+      </div>
+    </div>`;
   }).join('');
 
-  const totals = {
-    betrieb: entries.reduce((s,e)=>s+(parseFloat(e.daysBetrieb)||0),0),
-    home:    entries.reduce((s,e)=>s+(parseFloat(e.daysHome)||0),0),
-    school:  entries.reduce((s,e)=>s+(parseFloat(e.daysSchool)||0),0),
-    sick:    entries.reduce((s,e)=>s+(parseFloat(e.daysSick)||0),0),
-    vac:     entries.reduce((s,e)=>s+(parseFloat(e.daysVacation)||0),0),
-    hours:        entries.reduce((s,e)=>s+(parseFloat(e.hours)||0),0),
-    hoursBetrieb: entries.reduce((s,e)=>s+(parseFloat(e.hoursBetrieb)||0),0),
-    hoursSchool:  entries.reduce((s,e)=>s+(parseFloat(e.hoursSchool)||0),0),
-  };
+  return `<div style="background:#fff;width:794px;min-height:1123px;padding:30px 44px 56px;font-family:'Arial',sans-serif;font-size:10px;color:#000;box-sizing:border-box;position:relative;">
 
-  return `<div style="background:#fff;width:794px;min-height:1123px;padding:40px 48px 60px;font-family:'Arial',sans-serif;font-size:12px;color:#000;box-sizing:border-box;position:relative;">
-
-  <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #1a1a2e;padding-bottom:10px;margin-bottom:14px;">
-    <div>
-      <div style="font-size:18px;font-weight:bold;color:#1a1a2e;">Ausbildungsnachweis – Übersicht</div>
-      <div style="font-size:11px;color:#555;margin-top:2px;">${periodStr} &nbsp;·&nbsp; ${entries.length} Wochen</div>
-    </div>
-    <div style="text-align:right;font-size:11px;color:#444;">
-      <div><strong>${fullName}</strong></div>
-      <div>${escHtml(p.profession||'')}</div>
-      <div>${escHtml(p.company||'')}</div>
-    </div>
+  <!-- Page header -->
+  <div style="text-align:center;border-bottom:2.5px solid #1f3a5f;padding-bottom:7px;margin-bottom:9px;">
+    <div style="font-size:15px;font-weight:bold;color:#1f3a5f;">Ausbildungsnachweis gemäß § 43 BBiG</div>
+    <div style="font-size:9px;color:#666;margin-top:2px;">${periodStr} · ${entries.length} Woche(n) · Seite ${pageNum} von ${totalPages}</div>
   </div>
 
-  <table style="width:100%;border-collapse:collapse;margin-bottom:6px;font-size:10.5px;">
+  <!-- Profile info compact -->
+  <table style="width:100%;border-collapse:collapse;margin-bottom:9px;font-size:9px;">
     <tr>
-      <td style="padding:4px 8px;border:1px solid #ccc;background:#f5f5f5;width:18%;font-weight:bold;">Auszubildende/r</td><td style="padding:4px 8px;border:1px solid #ccc;width:32%;">${fullName}</td>
-      <td style="padding:4px 8px;border:1px solid #ccc;background:#f5f5f5;width:16%;font-weight:bold;">Geburtsdatum</td><td style="padding:4px 8px;border:1px solid #ccc;">${bd}</td>
+      <td style="${td1s}width:18%;">Auszubildende/r</td><td style="${td2s}width:28%;">${fullName}</td>
+      <td style="${td1s}width:15%;">Geb.-datum</td><td style="${td2s}width:17%;">${bd}</td>
+      <td style="${td1s}width:10%;">Ausbilder</td><td style="${td2s}">${escHtml(p.ausbilder||'–')}</td>
     </tr>
     <tr>
-      <td style="padding:4px 8px;border:1px solid #ccc;background:#f5f5f5;font-weight:bold;">Ausbilder/in</td><td style="padding:4px 8px;border:1px solid #ccc;">${escHtml(p.ausbilder||'–')}</td>
-      <td style="padding:4px 8px;border:1px solid #ccc;background:#f5f5f5;font-weight:bold;">Betrieb</td><td style="padding:4px 8px;border:1px solid #ccc;">${escHtml(p.company||'–')}</td>
+      <td style="${td1s}">Betrieb</td><td style="${td2s}">${escHtml(p.company||'–')}</td>
+      <td style="${td1s}">Beruf</td><td style="${td2s}" colspan="3">${escHtml(p.profession||'–')} &nbsp;·&nbsp; ${p.startDate?fmtDate(p.startDate):'–'} – ${p.endDate?fmtDate(p.endDate):'–'}</td>
     </tr>
   </table>
 
-  <table style="width:100%;border-collapse:collapse;margin-bottom:16px;">
-    <thead>
-      <tr>
-        <th style="${th}">KW</th>
-        <th style="${th}">Zeitraum</th>
-        <th style="${thL}">Tätigkeiten (Kurzfassung)</th>
-        <th style="${th}">Betrieb<br>T</th>
-        <th style="${th}">HO<br>T</th>
-        <th style="${th}">Schule<br>T</th>
-        <th style="${th}">Krank<br>T</th>
-        <th style="${th}">Url.<br>T</th>
-        <th style="${th}">Std.<br>Arbeit</th>
-        <th style="${th}">Std.<br>Schule</th>
-        <th style="${th}">Std.<br>ges.</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${rows}
-      <tr style="background:#e8edf5;">
-        <td style="border:1px solid #aaa;padding:5px 4px;text-align:center;font-size:10px;font-weight:bold;" colspan="2">Summe (${entries.length} Wochen)</td>
-        <td style="border:1px solid #aaa;padding:5px 6px;font-size:10px;"></td>
-        <td style="border:1px solid #aaa;padding:5px 4px;text-align:center;font-size:10px;font-weight:bold;">${totals.betrieb}</td>
-        <td style="border:1px solid #aaa;padding:5px 4px;text-align:center;font-size:10px;font-weight:bold;">${totals.home}</td>
-        <td style="border:1px solid #aaa;padding:5px 4px;text-align:center;font-size:10px;font-weight:bold;">${totals.school}</td>
-        <td style="border:1px solid #aaa;padding:5px 4px;text-align:center;font-size:10px;font-weight:bold;">${totals.sick}</td>
-        <td style="border:1px solid #aaa;padding:5px 4px;text-align:center;font-size:10px;font-weight:bold;">${totals.vac}</td>
-        <td style="border:1px solid #aaa;padding:5px 4px;text-align:center;font-size:10px;font-weight:bold;">${totals.hoursBetrieb}</td>
-        <td style="border:1px solid #aaa;padding:5px 4px;text-align:center;font-size:10px;font-weight:bold;">${totals.hoursSchool}</td>
-        <td style="border:1px solid #aaa;padding:5px 4px;text-align:center;font-size:10px;font-weight:bold;">${totals.hours}</td>
-      </tr>
-    </tbody>
-  </table>
+  <!-- Week blocks -->
+  ${weekBlocks}
 
-  <div style="display:flex;justify-content:space-between;margin-top:auto;padding-top:14px;">
-    <div style="width:44%;"><div style="border-bottom:1px solid #000;height:38px;margin-bottom:5px;"></div><div style="font-size:10px;color:#555;">Datum, Unterschrift Auszubildende/r</div><div style="font-size:10px;color:#222;margin-top:2px;">${fullName}</div></div>
-    <div style="width:44%;"><div style="border-bottom:1px solid #000;height:38px;margin-bottom:5px;"></div><div style="font-size:10px;color:#555;">Datum, Unterschrift Ausbilder/in</div><div style="font-size:10px;color:#222;margin-top:2px;">${escHtml(p.ausbilder||'–')}</div></div>
+  <!-- §43 confirmation -->
+  <div style="border:1px solid #888;padding:6px 9px;font-size:8.5px;line-height:1.55;background:#fafafa;margin-top:8px;margin-bottom:10px;">
+    <strong>Bestätigung gemäß § 43 BBiG:</strong> Hiermit bestätigen wir, dass ${fullName} die gemäß § 43 Berufsbildungsgesetz erforderlichen Ausbildungsnachweise eigenhändig, ohne fremde Hilfe und vollständig erstellt hat. Diese Erklärung dient der Vorlage beim zuständigen Prüfungsausschuss.
   </div>
 
-  <div style="position:absolute;bottom:20px;left:48px;right:48px;text-align:center;font-size:9px;color:#999;border-top:1px solid #ddd;padding-top:5px;">
-    ${escHtml(p.company||'')} &nbsp;·&nbsp; ${periodStr} &nbsp;·&nbsp; Seite ${pageNum} von ${totalPages} &nbsp;·&nbsp; Kompakte Übersicht (kein offizieller Abgabenachweis gem. §43 BBiG)
+  <!-- Signatures -->
+  <div style="display:flex;justify-content:space-between;">
+    <div style="width:44%;">
+      <div style="border-bottom:1px solid #000;height:30px;margin-bottom:3px;"></div>
+      <div style="font-size:8.5px;color:#555;">Datum, Unterschrift Auszubildende/r</div>
+      <div style="font-size:8.5px;color:#222;margin-top:1px;">${fullName}</div>
+    </div>
+    <div style="width:44%;">
+      <div style="border-bottom:1px solid #000;height:30px;margin-bottom:3px;"></div>
+      <div style="font-size:8.5px;color:#555;">Datum, Unterschrift Ausbilder/in</div>
+      <div style="font-size:8.5px;color:#222;margin-top:1px;">${escHtml(p.ausbilder||'–')}</div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div style="position:absolute;bottom:16px;left:44px;right:44px;text-align:center;font-size:7.5px;color:#aaa;border-top:1px solid #e8e8e8;padding-top:4px;">
+    ${escHtml(p.company||'')} &nbsp;·&nbsp; ${periodStr} &nbsp;·&nbsp; Seite ${pageNum} von ${totalPages} &nbsp;·&nbsp; Ausbildungsnachweis gem. § 43 BBiG – geeignet als offizieller Abgabenachweis beim Prüfungsausschuss
   </div>
 </div>`;
 }
-
 // ===== Close modal on outside click =====
 document.getElementById('entryModal').addEventListener('click', function(e) { if (e.target===this) closeEntryModal(); });
 
