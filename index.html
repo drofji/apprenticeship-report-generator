@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Apprenticeship Report Generator</title>
+<title>Berichtsheft Generator</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -224,11 +224,15 @@ textarea { resize: vertical; min-height: 80px; }
         <div class="profile-avatar" id="avatarInitials">AW</div>
         <div class="profile-info"><h2 id="summaryName">–</h2><p id="summaryDetails">–</p></div>
       </div>
-      <div class="stats-row">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px;">
         <div class="stat-card"><div class="stat-value" id="statTotal">0</div><div class="stat-label">Berichte gesamt</div></div>
         <div class="stat-card"><div class="stat-value" id="statOffice">0</div><div class="stat-label">Tage Betrieb</div></div>
         <div class="stat-card"><div class="stat-value" id="statHome">0</div><div class="stat-label">Tage Homeoffice</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
         <div class="stat-card"><div class="stat-value" id="statSchool">0</div><div class="stat-label">Tage Schule</div></div>
+        <div class="stat-card"><div class="stat-value" id="statAvgWork">&mdash;</div><div class="stat-label">&Oslash; Std./Tag Arbeit</div></div>
+        <div class="stat-card"><div class="stat-value" id="statAvgSchool">&mdash;</div><div class="stat-label">&Oslash; Std./Tag Schule</div></div>
       </div>
       <div class="card">
         <div class="card-header">
@@ -381,10 +385,30 @@ textarea { resize: vertical; min-height: 80px; }
         <div class="form-group"><label>Datum von (Mo)</label><input type="date" id="eFrom" onchange="onDateFromChange()"></div>
         <div class="form-group"><label>Datum bis (Fr)</label><input type="date" id="eTo" onchange="onDateToChange()"></div>
         <div class="form-group full"><label>Tätigkeiten / Beschreibung</label><textarea id="eDescription" rows="5" placeholder="Beschreiben Sie Ihre Tätigkeiten dieser Woche..."></textarea></div>
-        <div class="form-group full"><label>Arbeitsstunden gesamt (Woche)</label><input type="number" id="eHours" min="0" max="80" step="0.5" placeholder="z.B. 40"></div>
       </div>
-      <div style="margin-top:16px;">
-        <label style="font-size:12px;font-weight:600;color:#444444;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:10px;">Anwesenheit (in Tagen)</label>
+
+      <!-- Hours section -->
+      <div style="margin-top:16px;padding:14px;background:#f8f7f5;border-radius:8px;border:1px solid #e8e6e0;">
+        <label style="font-size:12px;font-weight:600;color:#444;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:12px;">&#x23F1; Stunden</label>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Stunden im Betrieb / Homeoffice <span style="color:#cc1016;">*</span></label>
+            <input type="number" id="eHoursBetrieb" min="0" max="80" step="0.5" placeholder="z.B. 40" oninput="recalcTotalHours()">
+          </div>
+          <div class="form-group">
+            <label>Stunden in der Schule <span style="font-size:11px;color:#888;text-transform:none;letter-spacing:0;">(optional)</span></label>
+            <input type="number" id="eHoursSchool" min="0" max="40" step="0.5" placeholder="z.B. 0" oninput="recalcTotalHours()">
+          </div>
+          <div class="form-group full">
+            <label>Stunden gesamt (Woche) <span style="font-size:11px;color:#0a66c2;text-transform:none;letter-spacing:0;">— wird automatisch berechnet</span></label>
+            <input type="number" id="eHours" min="0" max="80" step="0.5" placeholder="—" style="background:#f0efec;color:#555;" readonly>
+          </div>
+        </div>
+      </div>
+
+      <!-- Days section -->
+      <div style="margin-top:14px;">
+        <label style="font-size:12px;font-weight:600;color:#444444;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:10px;">&#x1F4C5; Anwesenheit (in Tagen)</label>
         <div class="days-row">
           <div class="day-input-group"><label>&#x1F3E2; Betrieb</label><input type="number" id="eDaysBetrieb" min="0" max="5" step="0.5" value="0"></div>
           <div class="day-input-group"><label>&#x1F3E0; Homeoffice</label><input type="number" id="eDaysHome" min="0" max="5" step="0.5" value="0"></div>
@@ -633,10 +657,20 @@ async function renderDashboard() {
     if (profile.ausbilder) det += ' · Ausbilder: ' + profile.ausbilder;
     document.getElementById('summaryDetails').textContent = det;
   } else { el.style.display = 'none'; }
-  document.getElementById('statTotal').textContent = entries.length;
-  document.getElementById('statOffice').textContent = entries.reduce((s,e) => s + (parseFloat(e.daysBetrieb)||0), 0);
-  document.getElementById('statHome').textContent = entries.reduce((s,e) => s + (parseFloat(e.daysHome)||0), 0);
-  document.getElementById('statSchool').textContent = entries.reduce((s,e) => s + (parseFloat(e.daysSchool)||0), 0);
+  const totalDaysBetrieb  = entries.reduce((s,e) => s + (parseFloat(e.daysBetrieb)||0), 0);
+  const totalDaysHome     = entries.reduce((s,e) => s + (parseFloat(e.daysHome)||0), 0);
+  const totalDaysSchool   = entries.reduce((s,e) => s + (parseFloat(e.daysSchool)||0), 0);
+  const totalHoursBetrieb = entries.reduce((s,e) => s + (parseFloat(e.hoursBetrieb)||0), 0);
+  const totalHoursSchool  = entries.reduce((s,e) => s + (parseFloat(e.hoursSchool)||0), 0);
+  const totalWorkDays = totalDaysBetrieb + totalDaysHome;
+  const avgWork   = totalWorkDays   > 0 ? (totalHoursBetrieb / totalWorkDays).toFixed(1)   : '—';
+  const avgSchool = totalDaysSchool > 0 ? (totalHoursSchool  / totalDaysSchool).toFixed(1) : '—';
+  document.getElementById('statTotal').textContent      = entries.length;
+  document.getElementById('statOffice').textContent     = totalDaysBetrieb;
+  document.getElementById('statHome').textContent       = totalDaysHome;
+  document.getElementById('statSchool').textContent     = totalDaysSchool;
+  document.getElementById('statAvgWork').textContent    = avgWork;
+  document.getElementById('statAvgSchool').textContent  = avgSchool;
   const recent = [...entries].sort((a,b) => (b.year*100+b.kw)-(a.year*100+a.kw)).slice(0,5);
   const c = document.getElementById('recentEntries');
   if (recent.length === 0) {
@@ -685,7 +719,10 @@ async function openEntryModal(id) {
     if (e) {
       document.getElementById('eKW').value = e.kw||''; document.getElementById('eYear').value = e.year||'';
       document.getElementById('eFrom').value = e.dateFrom||''; document.getElementById('eTo').value = e.dateTo||'';
-      document.getElementById('eDescription').value = e.description||''; document.getElementById('eHours').value = e.hours||'';
+      document.getElementById('eDescription').value = e.description||'';
+      document.getElementById('eHoursBetrieb').value = e.hoursBetrieb != null ? e.hoursBetrieb : (e.hours||'');
+      document.getElementById('eHoursSchool').value  = e.hoursSchool  != null ? e.hoursSchool  : '';
+      recalcTotalHours();
       document.getElementById('eDaysBetrieb').value = e.daysBetrieb||0; document.getElementById('eDaysHome').value = e.daysHome||0;
       document.getElementById('eDaysSchool').value = e.daysSchool||0; document.getElementById('eDaysSick').value = e.daysSick||0;
       document.getElementById('eDaysVacation').value = e.daysVacation||0;
@@ -693,7 +730,10 @@ async function openEntryModal(id) {
   } else {
     document.getElementById('eKW').value=''; document.getElementById('eYear').value=new Date().getFullYear();
     document.getElementById('eFrom').value=''; document.getElementById('eTo').value='';
-    document.getElementById('eDescription').value=''; document.getElementById('eHours').value=(profile&&profile.weeklyHours)?profile.weeklyHours:40;
+    document.getElementById('eDescription').value='';
+    document.getElementById('eHoursBetrieb').value=(profile&&profile.weeklyHours)?profile.weeklyHours:40;
+    document.getElementById('eHoursSchool').value='';
+    recalcTotalHours();
     document.getElementById('eDaysBetrieb').value=0; document.getElementById('eDaysHome').value=0;
     document.getElementById('eDaysSchool').value=0; document.getElementById('eDaysSick').value=0;
     document.getElementById('eDaysVacation').value=0;
@@ -706,11 +746,17 @@ async function saveEntry() {
   const year = parseInt(document.getElementById('eYear').value);
   if (!kw||kw<1||kw>53) { toast('Bitte eine gültige Kalenderwoche (1–53) eingeben.','error'); return; }
   if (!year||year<2000) { toast('Bitte ein gültiges Jahr eingeben.','error'); return; }
+  const hoursBetrieb = parseFloat(document.getElementById('eHoursBetrieb').value);
+  if (!hoursBetrieb || hoursBetrieb <= 0) { toast('Bitte die Stunden im Betrieb / Homeoffice eingeben.','error'); return; }
+  const hoursSchool = parseFloat(document.getElementById('eHoursSchool').value) || 0;
+  const totalHours  = parseFloat(document.getElementById('eHours').value) || (hoursBetrieb + hoursSchool);
   const data = {
     kw, year,
     dateFrom: document.getElementById('eFrom').value, dateTo: document.getElementById('eTo').value,
     description: document.getElementById('eDescription').value.trim(),
-    hours: parseFloat(document.getElementById('eHours').value)||0,
+    hoursBetrieb,
+    hoursSchool,
+    hours: totalHours,
     daysBetrieb: parseFloat(document.getElementById('eDaysBetrieb').value)||0,
     daysHome: parseFloat(document.getElementById('eDaysHome').value)||0,
     daysSchool: parseFloat(document.getElementById('eDaysSchool').value)||0,
@@ -731,6 +777,13 @@ async function deleteCurrentEntry() {
   closeEntryModal(); toast('Bericht gelöscht.',''); renderEntries(); renderDashboard();
 }
 
+// ===== Stunden auto-sum =====
+function recalcTotalHours() {
+  const b = parseFloat(document.getElementById('eHoursBetrieb').value) || 0;
+  const s = parseFloat(document.getElementById('eHoursSchool').value)  || 0;
+  document.getElementById('eHours').value = (b + s) > 0 ? (b + s) : '';
+}
+
 // ===== Auto KW =====
 function autoFillKW() {
   const now = new Date(); const kw = getISOWeek(now); const year = now.getFullYear();
@@ -742,7 +795,9 @@ function autoFillKW() {
   const friday = new Date(monday); friday.setUTCDate(friday.getUTCDate()+4);
   document.getElementById('eFrom').value = toInputDate(monday); document.getElementById('eTo').value = toInputDate(friday);
   document.getElementById('eDescription').value = '';
-  document.getElementById('eHours').value = (profile&&profile.weeklyHours)?profile.weeklyHours:40;
+  document.getElementById('eHoursBetrieb').value = (profile&&profile.weeklyHours)?profile.weeklyHours:40;
+  document.getElementById('eHoursSchool').value = '';
+  recalcTotalHours();
   document.getElementById('eDaysBetrieb').value=0; document.getElementById('eDaysHome').value=0;
   document.getElementById('eDaysSchool').value=0; document.getElementById('eDaysSick').value=0; document.getElementById('eDaysVacation').value=0;
   document.getElementById('entryModal').classList.add('open');
@@ -880,10 +935,10 @@ function buildPageDetailed(e, p, fullName, pageNum, total) {
   <div style="border:1px solid #aaa;padding:10px;min-height:175px;font-size:12px;line-height:1.6;word-break:break-word;margin-bottom:12px;">${desc}</div>
   <table style="width:100%;border-collapse:collapse;margin-bottom:12px;">
     <thead><tr>
-      <th style="${th}">Betrieb<br>(Tage)</th><th style="${th}">Homeoffice<br>(Tage)</th><th style="${th}">Berufsschule<br>(Tage)</th><th style="${th}">Krank<br>(Tage)</th><th style="${th}">Urlaub<br>(Tage)</th><th style="${th}">Stunden<br>gesamt</th>
+      <th style="${th}">Betrieb<br>(Tage)</th><th style="${th}">Homeoffice<br>(Tage)</th><th style="${th}">Berufsschule<br>(Tage)</th><th style="${th}">Krank<br>(Tage)</th><th style="${th}">Urlaub<br>(Tage)</th><th style="${th}">Std.<br>Betrieb/HO</th><th style="${th}">Std.<br>Schule</th><th style="${th}">Std.<br>gesamt</th>
     </tr></thead>
     <tbody><tr>
-      <td style="${td}">${e.daysBetrieb||0}</td><td style="${td}">${e.daysHome||0}</td><td style="${td}">${e.daysSchool||0}</td><td style="${td}">${e.daysSick||0}</td><td style="${td}">${e.daysVacation||0}</td><td style="${td}"><strong>${e.hours||0}</strong></td>
+      <td style="${td}">${e.daysBetrieb||0}</td><td style="${td}">${e.daysHome||0}</td><td style="${td}">${e.daysSchool||0}</td><td style="${td}">${e.daysSick||0}</td><td style="${td}">${e.daysVacation||0}</td><td style="${td}">${e.hoursBetrieb||0}</td><td style="${td}">${e.hoursSchool||0}</td><td style="${td}"><strong>${e.hours||0}</strong></td>
     </tr></tbody>
   </table>
   <div style="border:1px solid #000;padding:11px;font-size:11px;line-height:1.6;background:#fafafa;margin-bottom:22px;">
@@ -928,6 +983,8 @@ function buildPageCompact(entries, p, fullName, pageNum, totalPages) {
       <td style="${tdCi}">${e.daysSchool||0}</td>
       <td style="${tdCi}">${e.daysSick||0}</td>
       <td style="${tdCi}">${e.daysVacation||0}</td>
+      <td style="${tdCi}">${e.hoursBetrieb||0}</td>
+      <td style="${tdCi}">${e.hoursSchool||0}</td>
       <td style="${tdCi}"><strong>${e.hours||0}</strong></td>
     </tr>`;
   }).join('');
@@ -938,7 +995,9 @@ function buildPageCompact(entries, p, fullName, pageNum, totalPages) {
     school:  entries.reduce((s,e)=>s+(parseFloat(e.daysSchool)||0),0),
     sick:    entries.reduce((s,e)=>s+(parseFloat(e.daysSick)||0),0),
     vac:     entries.reduce((s,e)=>s+(parseFloat(e.daysVacation)||0),0),
-    hours:   entries.reduce((s,e)=>s+(parseFloat(e.hours)||0),0),
+    hours:        entries.reduce((s,e)=>s+(parseFloat(e.hours)||0),0),
+    hoursBetrieb: entries.reduce((s,e)=>s+(parseFloat(e.hoursBetrieb)||0),0),
+    hoursSchool:  entries.reduce((s,e)=>s+(parseFloat(e.hoursSchool)||0),0),
   };
 
   return `<div style="background:#fff;width:794px;min-height:1123px;padding:40px 48px 60px;font-family:'Arial',sans-serif;font-size:12px;color:#000;box-sizing:border-box;position:relative;">
@@ -977,7 +1036,9 @@ function buildPageCompact(entries, p, fullName, pageNum, totalPages) {
         <th style="${th}">Schule<br>T</th>
         <th style="${th}">Krank<br>T</th>
         <th style="${th}">Url.<br>T</th>
-        <th style="${th}">Std.</th>
+        <th style="${th}">Std.<br>Arbeit</th>
+        <th style="${th}">Std.<br>Schule</th>
+        <th style="${th}">Std.<br>ges.</th>
       </tr>
     </thead>
     <tbody>
@@ -990,6 +1051,8 @@ function buildPageCompact(entries, p, fullName, pageNum, totalPages) {
         <td style="border:1px solid #aaa;padding:5px 4px;text-align:center;font-size:10px;font-weight:bold;">${totals.school}</td>
         <td style="border:1px solid #aaa;padding:5px 4px;text-align:center;font-size:10px;font-weight:bold;">${totals.sick}</td>
         <td style="border:1px solid #aaa;padding:5px 4px;text-align:center;font-size:10px;font-weight:bold;">${totals.vac}</td>
+        <td style="border:1px solid #aaa;padding:5px 4px;text-align:center;font-size:10px;font-weight:bold;">${totals.hoursBetrieb}</td>
+        <td style="border:1px solid #aaa;padding:5px 4px;text-align:center;font-size:10px;font-weight:bold;">${totals.hoursSchool}</td>
         <td style="border:1px solid #aaa;padding:5px 4px;text-align:center;font-size:10px;font-weight:bold;">${totals.hours}</td>
       </tr>
     </tbody>
