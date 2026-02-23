@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Berichtsheft Generator</title>
+<title>Apprenticeship Report Generator</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -14,36 +14,29 @@ body {
   min-height: 100vh;
   font-size: 14px;
   line-height: 1.5;
+  display: flex;
+  flex-direction: column;
 }
-.layout { display: flex; min-height: 100vh; }
+.layout { display: flex; flex: 1; }
 .sidebar {
-  width: 240px;
-  background: #ffffff;
-  border-right: 1px solid #e0dfdc;
-  position: fixed;
-  top: 0; left: 0; bottom: 0;
-  overflow-y: auto;
-  z-index: 100;
+  width: 240px; background: #ffffff; border-right: 1px solid #e0dfdc;
+  position: fixed; top: 0; left: 0; bottom: 0; overflow-y: auto; z-index: 100;
   box-shadow: 0 1px 3px rgba(0,0,0,0.08);
 }
-.sidebar-logo {
-  padding: 20px 16px 16px;
-  border-bottom: 1px solid #e0dfdc;
-  background: #0a66c2;
-}
+.sidebar-logo { padding: 20px 16px 16px; border-bottom: 1px solid #e0dfdc; background: #0a66c2; }
 .sidebar-logo h1 { font-size: 18px; font-weight: 700; color: #ffffff; letter-spacing: -0.3px; }
 .sidebar-logo p { font-size: 11px; color: rgba(255,255,255,0.75); margin-top: 2px; }
 .nav-section { padding: 8px 0; border-bottom: 1px solid #e0dfdc; }
 .nav-section-title { font-size: 11px; font-weight: 600; color: #666666; text-transform: uppercase; letter-spacing: 0.8px; padding: 8px 16px 4px; }
 .nav-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 16px; cursor: pointer; font-size: 13px; font-weight: 500;
-  color: #444444; border-left: 3px solid transparent; transition: all 0.15s; text-decoration: none;
+  display: flex; align-items: center; gap: 10px; padding: 10px 16px; cursor: pointer;
+  font-size: 13px; font-weight: 500; color: #444444; border-left: 3px solid transparent;
+  transition: all 0.15s; text-decoration: none;
 }
 .nav-item:hover { background: #f3f2ef; color: #0a66c2; }
 .nav-item.active { background: #eef3fb; color: #0a66c2; border-left-color: #0a66c2; font-weight: 600; }
 .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
-.main { margin-left: 240px; flex: 1; padding: 24px; max-width: calc(100% - 240px); }
+.main { margin-left: 240px; flex: 1; padding: 24px 24px 0; max-width: calc(100% - 240px); }
 .card {
   background: #ffffff; border: 1px solid #e0dfdc; border-radius: 8px;
   padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
@@ -63,14 +56,12 @@ input, textarea, select {
   font-size: 14px; font-family: inherit; color: #191919; background: #ffffff;
   transition: border-color 0.15s, box-shadow 0.15s; outline: none;
 }
-input:focus, textarea:focus, select:focus {
-  border-color: #0a66c2; box-shadow: 0 0 0 3px rgba(10,102,194,0.12);
-}
+input:focus, textarea:focus, select:focus { border-color: #0a66c2; box-shadow: 0 0 0 3px rgba(10,102,194,0.12); }
 textarea { resize: vertical; min-height: 80px; }
 .btn {
-  display: inline-flex; align-items: center; gap: 7px;
-  padding: 9px 18px; border-radius: 20px; font-size: 13px; font-weight: 600;
-  cursor: pointer; border: none; transition: all 0.15s; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 7px; padding: 9px 18px;
+  border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer;
+  border: none; transition: all 0.15s; text-decoration: none;
 }
 .btn-primary { background: #0a66c2; color: #ffffff; }
 .btn-primary:hover { background: #004182; }
@@ -80,8 +71,6 @@ textarea { resize: vertical; min-height: 80px; }
 .btn-ghost:hover { background: #f3f2ef; color: #191919; }
 .btn-danger { background: transparent; color: #cc1016; border: 1.5px solid #cc1016; }
 .btn-danger:hover { background: #fef2f2; }
-.btn-success { background: #057642; color: #ffffff; }
-.btn-success:hover { background: #046236; }
 .btn-sm { padding: 6px 14px; font-size: 12px; border-radius: 16px; }
 .page { display: none; }
 .page.active { display: block; }
@@ -95,10 +84,7 @@ textarea { resize: vertical; min-height: 80px; }
 }
 .week-item:hover { border-color: #0a66c2; box-shadow: 0 2px 8px rgba(10,102,194,0.12); }
 .week-item-left { display: flex; align-items: center; gap: 14px; }
-.week-badge {
-  background: #eef3fb; color: #0a66c2; font-size: 12px; font-weight: 700;
-  padding: 6px 12px; border-radius: 20px; white-space: nowrap;
-}
+.week-badge { background: #eef3fb; color: #0a66c2; font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 20px; white-space: nowrap; }
 .week-item-title { font-size: 14px; font-weight: 600; color: #191919; }
 .week-item-meta { font-size: 12px; color: #666666; margin-top: 2px; }
 .week-item-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 5px; }
@@ -108,56 +94,25 @@ textarea { resize: vertical; min-height: 80px; }
 .tag-school { background: #fff8e1; color: #b7791f; }
 .tag-sick { background: #fce8e8; color: #cc1016; }
 .tag-vacation { background: #f0e6ff; color: #7c3aed; }
-.modal-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000;
-  display: none; align-items: center; justify-content: center; padding: 20px;
-}
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; }
 .modal-overlay.open { display: flex; }
-.modal {
-  background: #ffffff; border-radius: 10px; width: 100%; max-width: 640px;
-  max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,0.18);
-}
-.modal-header {
-  padding: 20px 24px 16px; border-bottom: 1px solid #e0dfdc;
-  display: flex; align-items: center; justify-content: space-between;
-  position: sticky; top: 0; background: #ffffff; z-index: 1;
-}
+.modal { background: #ffffff; border-radius: 10px; width: 100%; max-width: 640px; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,0.18); }
+.modal-header { padding: 20px 24px 16px; border-bottom: 1px solid #e0dfdc; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: #ffffff; z-index: 1; }
 .modal-title { font-size: 17px; font-weight: 700; color: #191919; }
-.modal-close {
-  width: 32px; height: 32px; border-radius: 50%; border: none; background: transparent;
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-  color: #666666; font-size: 18px; transition: background 0.15s;
-}
+.modal-close { width: 32px; height: 32px; border-radius: 50%; border: none; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #666666; font-size: 18px; transition: background 0.15s; }
 .modal-close:hover { background: #f3f2ef; }
 .modal-body { padding: 20px 24px; }
-.modal-footer {
-  padding: 16px 24px; border-top: 1px solid #e0dfdc;
-  display: flex; gap: 10px; justify-content: flex-end;
-}
+.modal-footer { padding: 16px 24px; border-top: 1px solid #e0dfdc; display: flex; gap: 10px; justify-content: flex-end; }
 .days-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 4px; }
 .day-input-group { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.day-input-group label {
-  font-size: 11px; text-align: center; text-transform: none;
-  letter-spacing: 0; color: #444444; font-weight: 500;
-}
+.day-input-group label { font-size: 11px; text-align: center; text-transform: none; letter-spacing: 0; color: #444444; font-weight: 500; }
 .day-input-group input { width: 100%; text-align: center; padding: 8px 4px; }
 .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
-.stat-card {
-  background: #ffffff; border: 1px solid #e0dfdc; border-radius: 8px;
-  padding: 16px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-}
+.stat-card { background: #ffffff; border: 1px solid #e0dfdc; border-radius: 8px; padding: 16px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
 .stat-value { font-size: 26px; font-weight: 700; color: #0a66c2; }
 .stat-label { font-size: 11px; color: #666666; margin-top: 2px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
-.profile-summary {
-  background: #ffffff; border: 1px solid #e0dfdc; border-radius: 8px; padding: 20px;
-  margin-bottom: 20px; display: flex; align-items: center; gap: 16px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-}
-.profile-avatar {
-  width: 60px; height: 60px; border-radius: 50%; background: #0a66c2;
-  display: flex; align-items: center; justify-content: center; color: #ffffff;
-  font-size: 22px; font-weight: 700; flex-shrink: 0;
-}
+.profile-summary { background: #ffffff; border: 1px solid #e0dfdc; border-radius: 8px; padding: 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+.profile-avatar { width: 60px; height: 60px; border-radius: 50%; background: #0a66c2; display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 22px; font-weight: 700; flex-shrink: 0; }
 .profile-info h2 { font-size: 18px; font-weight: 700; color: #191919; }
 .profile-info p { font-size: 13px; color: #555555; margin-top: 2px; }
 .empty-state { text-align: center; padding: 48px 20px; color: #888888; }
@@ -166,83 +121,62 @@ textarea { resize: vertical; min-height: 80px; }
 .search-bar { position: relative; margin-bottom: 16px; }
 .search-bar input { width: 100%; padding-left: 36px; border-radius: 20px; }
 .search-bar svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #888888; width: 16px; height: 16px; }
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #f3f2ef; }
-::-webkit-scrollbar-thumb { background: #c0bdb5; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #999999; }
-.toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
-.toast {
-  background: #191919; color: #ffffff; padding: 12px 18px; border-radius: 8px;
-  font-size: 13px; font-weight: 500; box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-  animation: slideIn 0.2s ease; min-width: 200px;
+/* Mode cards */
+.mode-cards { display: flex; gap: 12px; margin-bottom: 16px; }
+.mode-card { flex: 1; border: 2px solid #d0cfc9; border-radius: 8px; padding: 16px; cursor: pointer; background: #ffffff; transition: all 0.15s; }
+.mode-card.active { border-color: #0a66c2; background: #eef3fb; }
+.mode-card-icon { font-size: 22px; margin-bottom: 6px; }
+.mode-card-title { font-size: 14px; font-weight: 700; color: #444444; margin-bottom: 3px; }
+.mode-card.active .mode-card-title { color: #0a66c2; }
+.mode-card-desc { font-size: 12px; color: #666666; line-height: 1.5; }
+/* Footer */
+.app-footer {
+  margin-left: 240px; background: #ffffff; border-top: 1px solid #e0dfdc;
+  padding: 14px 24px; display: flex; align-items: center; justify-content: center;
 }
+.app-footer a {
+  display: flex; align-items: center; gap: 8px; text-decoration: none;
+  color: #444444; font-size: 12px; font-weight: 500; transition: color 0.15s;
+}
+.app-footer a:hover { color: #191919; }
+.app-footer svg { width: 18px; height: 18px; }
+.app-footer .sep { margin: 0 8px; color: #c0bdb5; }
+/* Toast */
+.toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+.toast { background: #191919; color: #ffffff; padding: 12px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; box-shadow: 0 4px 16px rgba(0,0,0,0.2); animation: slideIn 0.2s ease; min-width: 200px; }
 .toast.success { background: #057642; }
 .toast.error { background: #cc1016; }
 @keyframes slideIn { from { transform: translateX(60px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-.confirm-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000;
-  display: none; align-items: center; justify-content: center;
-}
+/* Confirm */
+.confirm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; display: none; align-items: center; justify-content: center; }
 .confirm-overlay.open { display: flex; }
-.confirm-box {
-  background: #ffffff; border-radius: 10px; padding: 28px; max-width: 380px;
-  width: 90%; box-shadow: 0 8px 40px rgba(0,0,0,0.18); text-align: center;
-}
+.confirm-box { background: #ffffff; border-radius: 10px; padding: 28px; max-width: 380px; width: 90%; box-shadow: 0 8px 40px rgba(0,0,0,0.18); text-align: center; }
 .confirm-icon { font-size: 32px; margin-bottom: 12px; }
 .confirm-title { font-size: 17px; font-weight: 700; color: #191919; margin-bottom: 8px; }
 .confirm-text { font-size: 13px; color: #555555; margin-bottom: 20px; line-height: 1.5; }
 .confirm-btns { display: flex; gap: 10px; justify-content: center; }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f3f2ef; }
+::-webkit-scrollbar-thumb { background: #c0bdb5; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #999999; }
 @media (max-width: 768px) {
   .sidebar { width: 100%; position: relative; height: auto; }
-  .main { margin-left: 0; max-width: 100%; }
+  .main, .app-footer { margin-left: 0; max-width: 100%; }
   .layout { flex-direction: column; }
   .form-grid, .form-grid-3 { grid-template-columns: 1fr; }
   .stats-row { grid-template-columns: 1fr 1fr; }
   .days-row { grid-template-columns: repeat(3, 1fr); }
-}
-@media print {
-  .sidebar, .no-print { display: none !important; }
-  .main { margin-left: 0; max-width: 100%; padding: 0; }
-  #printContainer { display: block !important; }
-  #app { display: none !important; }
-  .print-page {
-    background: #ffffff;
-    padding: 15mm 18mm 20mm;
-    font-family: 'Times New Roman', serif;
-    font-size: 10pt;
-    color: #000000;
-    max-width: 210mm;
-    min-height: 297mm;
-    position: relative;
-    page-break-after: always;
-  }
-  .print-header { margin-bottom: 5mm; border-bottom: 0.5pt solid #000; padding-bottom: 3mm; }
-  .print-title { font-size: 14pt; font-weight: bold; }
-  .print-subtitle { font-size: 10pt; color: #444; }
-  .print-meta-table { width: 100%; border-collapse: collapse; margin-bottom: 4mm; }
-  .print-meta-table td { padding: 2mm 3mm; border: 0.5pt solid #999; font-size: 9.5pt; vertical-align: top; }
-  .print-meta-table td:nth-child(odd) { font-weight: bold; background: #f5f5f5; width: 22%; }
-  .print-desc { border: 0.5pt solid #999; padding: 3mm; min-height: 45mm; font-size: 9.5pt; margin-bottom: 4mm; white-space: pre-wrap; }
-  .print-days-table { width: 100%; border-collapse: collapse; margin-bottom: 4mm; }
-  .print-days-table th { background: #e8e8e8; border: 0.5pt solid #999; padding: 2mm; font-size: 9pt; text-align: center; }
-  .print-days-table td { border: 0.5pt solid #999; padding: 2mm; text-align: center; font-size: 9.5pt; }
-  .print-confirmation { border: 0.5pt solid #000; padding: 4mm; font-size: 9pt; margin-bottom: 6mm; line-height: 1.5; background: #fafafa; }
-  .print-signature-row { display: flex; justify-content: space-between; margin-top: 8mm; }
-  .print-signature-box { width: 45%; }
-  .print-signature-line { border-bottom: 0.5pt solid #000; height: 12mm; margin-bottom: 2mm; }
-  .print-signature-label { font-size: 8.5pt; color: #444; }
-  .print-signature-name { font-size: 8.5pt; color: #222; margin-top: 1mm; }
-  .print-footer { position: absolute; bottom: 12mm; left: 18mm; right: 18mm; text-align: center; font-size: 8pt; color: #777; border-top: 0.5pt solid #ccc; padding-top: 2mm; }
+  .mode-cards { flex-direction: column; }
 }
 </style>
 </head>
 <body>
 
-<div id="app">
+<div id="app" style="display:flex;flex-direction:column;flex:1;">
 <div class="layout">
   <aside class="sidebar">
     <div class="sidebar-logo">
-      <h1>📋 Berichtsheft</h1>
+      <h1>&#x1F4CB; Berichtsheft</h1>
       <p>Ausbildungsnachweis Generator</p>
     </div>
     <nav>
@@ -262,18 +196,18 @@ textarea { resize: vertical; min-height: 80px; }
         </a>
         <a class="nav-item" onclick="showPage('print')" data-page="print">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-          Drucken
+          PDF Export
         </a>
       </div>
       <div class="nav-section">
         <div class="nav-section-title">Daten</div>
         <a class="nav-item" onclick="exportData()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Exportieren
+          Exportieren (JSON)
         </a>
         <a class="nav-item" onclick="document.getElementById('importFile').click()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          Importieren
+          Importieren (JSON)
         </a>
         <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
       </div>
@@ -281,16 +215,14 @@ textarea { resize: vertical; min-height: 80px; }
   </aside>
 
   <main class="main">
+
     <!-- DASHBOARD -->
     <div id="page-dashboard" class="page active">
       <p class="page-title">Übersicht</p>
       <p class="page-subtitle">Willkommen in Ihrem Berichtsheft-System</p>
       <div id="profileSummary" class="profile-summary" style="display:none">
         <div class="profile-avatar" id="avatarInitials">AW</div>
-        <div class="profile-info">
-          <h2 id="summaryName">–</h2>
-          <p id="summaryDetails">–</p>
-        </div>
+        <div class="profile-info"><h2 id="summaryName">–</h2><p id="summaryDetails">–</p></div>
       </div>
       <div class="stats-row">
         <div class="stat-card"><div class="stat-value" id="statTotal">0</div><div class="stat-label">Berichte gesamt</div></div>
@@ -303,13 +235,7 @@ textarea { resize: vertical; min-height: 80px; }
           <span class="card-title">Letzte Einträge</span>
           <button class="btn btn-primary btn-sm" onclick="showPage('entries')">Alle anzeigen</button>
         </div>
-        <div id="recentEntries">
-          <div class="empty-state">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            <p>Noch keine Berichte vorhanden.</p>
-            <button class="btn btn-primary" onclick="showPage('entries')">Ersten Bericht erstellen</button>
-          </div>
-        </div>
+        <div id="recentEntries"></div>
       </div>
     </div>
 
@@ -323,42 +249,15 @@ textarea { resize: vertical; min-height: 80px; }
           <button class="btn btn-primary" onclick="saveProfile()">Speichern</button>
         </div>
         <div class="form-grid">
-          <div class="form-group">
-            <label>Vorname Auszubildende/r</label>
-            <input type="text" id="pFirstName" placeholder="z.B. Alexander">
-          </div>
-          <div class="form-group">
-            <label>Nachname Auszubildende/r</label>
-            <input type="text" id="pLastName" placeholder="z.B. Wiese">
-          </div>
-          <div class="form-group">
-            <label>Geburtsdatum</label>
-            <input type="date" id="pBirthdate">
-          </div>
-          <div class="form-group">
-            <label>Ausbildungsberuf</label>
-            <input type="text" id="pProfession" placeholder="z.B. Fachinformatiker/in">
-          </div>
-          <div class="form-group full">
-            <label>Ausbildungsbetrieb / Unternehmen</label>
-            <input type="text" id="pCompany" placeholder="z.B. Muster GmbH">
-          </div>
-          <div class="form-group">
-            <label>Name Ausbilder/in</label>
-            <input type="text" id="pAusbilder" placeholder="z.B. Max Mustermann">
-          </div>
-          <div class="form-group">
-            <label>Ausbildungsbeginn</label>
-            <input type="date" id="pStartDate">
-          </div>
-          <div class="form-group">
-            <label>Ausbildungsende (voraussichtlich)</label>
-            <input type="date" id="pEndDate">
-          </div>
-          <div class="form-group">
-            <label>Wöchentliche Soll-Stunden</label>
-            <input type="number" id="pWeeklyHours" value="40" min="1" max="60">
-          </div>
+          <div class="form-group"><label>Vorname Auszubildende/r</label><input type="text" id="pFirstName" placeholder="z.B. Alexander"></div>
+          <div class="form-group"><label>Nachname Auszubildende/r</label><input type="text" id="pLastName" placeholder="z.B. Wiese"></div>
+          <div class="form-group"><label>Geburtsdatum</label><input type="date" id="pBirthdate"></div>
+          <div class="form-group"><label>Ausbildungsberuf</label><input type="text" id="pProfession" placeholder="z.B. Fachinformatiker/in"></div>
+          <div class="form-group full"><label>Ausbildungsbetrieb / Unternehmen</label><input type="text" id="pCompany" placeholder="z.B. Muster GmbH"></div>
+          <div class="form-group"><label>Name Ausbilder/in</label><input type="text" id="pAusbilder" placeholder="z.B. Max Mustermann"></div>
+          <div class="form-group"><label>Ausbildungsbeginn</label><input type="date" id="pStartDate"></div>
+          <div class="form-group"><label>Ausbildungsende (voraussichtlich)</label><input type="date" id="pEndDate"></div>
+          <div class="form-group"><label>Wöchentliche Soll-Stunden</label><input type="number" id="pWeeklyHours" value="40" min="1" max="60"></div>
         </div>
       </div>
       <div class="card">
@@ -373,61 +272,96 @@ textarea { resize: vertical; min-height: 80px; }
     <div id="page-entries" class="page">
       <p class="page-title">Ausbildungsnachweise</p>
       <p class="page-subtitle">Wöchentliche Berichte verwalten</p>
-      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;" class="no-print">
+      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
         <button class="btn btn-primary" onclick="openEntryModal(null)">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Neuer Bericht
         </button>
         <button class="btn btn-ghost" onclick="autoFillKW()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          Aktuelle KW vorausfüllen
+          Aktuelle KW
         </button>
       </div>
-      <div class="search-bar no-print">
+      <div class="search-bar">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="text" id="searchInput" placeholder="Berichte durchsuchen..." oninput="renderEntries()">
       </div>
       <div id="entriesContainer"></div>
     </div>
 
-    <!-- DRUCKEN -->
+    <!-- PDF EXPORT -->
     <div id="page-print" class="page">
-      <p class="page-title">Drucken &amp; Exportieren</p>
-      <p class="page-subtitle">Berichte für die Vorlage beim Prüfungsausschuss vorbereiten</p>
+      <p class="page-title">PDF Export</p>
+      <p class="page-subtitle">Berichte als PDF herunterladen</p>
+
+      <!-- Mode selector -->
+      <div class="mode-cards">
+        <div class="mode-card active" id="modeCardFull" onclick="setPrintMode('full')">
+          <div class="mode-card-icon">&#x1F4C4;</div>
+          <div class="mode-card-title">Detailliert — 1 Bericht pro Seite</div>
+          <div class="mode-card-desc">Vollständiges A4-Formular mit Tätigkeitsbeschreibung, Anwesenheitstabelle, § 43 BBiG-Bestätigung und Unterschriftsfeldern. Für die offizielle Abgabe beim Prüfungsausschuss.</div>
+        </div>
+        <div class="mode-card" id="modeCardCompact" onclick="setPrintMode('compact')">
+          <div class="mode-card-icon">&#x1F4CA;</div>
+          <div class="mode-card-title">Kompakt — Mehrere Wochen pro Seite</div>
+          <div class="mode-card-desc">Platzsparende Übersichtstabelle. Ideal für Quartalsnachweise, interne Reviews oder eine schnelle Gesamtübersicht. Beschreibungen werden gekürzt dargestellt.</div>
+        </div>
+      </div>
+
       <div class="card">
-        <div class="card-header"><span class="card-title">Druckoptionen</span></div>
+        <div class="card-header"><span class="card-title" id="printCardTitle">Detailliert — Optionen</span></div>
+
         <div class="form-grid-3">
+          <div class="form-group"><label>Von KW</label><input type="number" id="printFrom" min="1" max="53" placeholder="z.B. 1"></div>
+          <div class="form-group"><label>Bis KW</label><input type="number" id="printTo" min="1" max="53" placeholder="z.B. 52"></div>
+          <div class="form-group"><label>Jahr (optional)</label><input type="number" id="printYear" placeholder="z.B. 2024"></div>
+        </div>
+
+        <div id="compactOptions" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid #f0efec;">
           <div class="form-group">
-            <label>Von KW</label>
-            <input type="number" id="printFrom" min="1" max="53" placeholder="z.B. 1">
-          </div>
-          <div class="form-group">
-            <label>Bis KW</label>
-            <input type="number" id="printTo" min="1" max="53" placeholder="z.B. 52">
-          </div>
-          <div class="form-group">
-            <label>Jahr</label>
-            <input type="number" id="printYear" placeholder="z.B. 2024">
+            <label>Wochen pro Seite</label>
+            <select id="weeksPerPage">
+              <option value="4">4 Wochen (ca. 1 Monat)</option>
+              <option value="6" selected>6 Wochen</option>
+              <option value="8">8 Wochen (ca. 2 Monate)</option>
+              <option value="13">13 Wochen (1 Quartal)</option>
+              <option value="26">26 Wochen (1 Halbjahr)</option>
+            </select>
           </div>
         </div>
+
         <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;">
           <button class="btn btn-primary" onclick="printReports(false)">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-            Alle Berichte drucken
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Alle Berichte exportieren
           </button>
-          <button class="btn btn-secondary" onclick="printReports(true)">Gefilterte Berichte drucken</button>
+          <button class="btn btn-secondary" onclick="printReports(true)">Gefiltert exportieren</button>
         </div>
       </div>
+
       <div class="card">
         <div class="card-header"><span class="card-title">Hinweis</span></div>
-        <p style="font-size:13px;color:#444;line-height:1.6;">
-          Jeder Bericht wird auf einer eigenen Seite gedruckt. Der Bestätigungstext gemäß § 43 BBiG sowie Unterschriftsfelder für Sie und Ihren Ausbilder sind auf jedem Blatt enthalten.<br><br>
-          Bitte stellen Sie sicher, dass die Stammdaten unter <strong>Stammdaten</strong> vollständig ausgefüllt sind, bevor Sie drucken.
-        </p>
+        <div id="printHintFull" style="font-size:13px;color:#444;line-height:1.6;">
+          Jeder Bericht wird auf einer eigenen A4-Seite ausgegeben. Der Bestätigungstext gemäß § 43 BBiG sowie Unterschriftsfelder für Sie und Ihren Ausbilder sind auf jedem Blatt enthalten. <strong>Geeignet für die offizielle Abgabe beim Prüfungsausschuss.</strong>
+        </div>
+        <div id="printHintCompact" style="display:none;font-size:13px;color:#444;line-height:1.6;">
+          Mehrere Wochen werden platzsparend als Übersichtstabelle zusammengefasst. Beschreibungen werden auf 60 Zeichen gekürzt. <strong>Nicht geeignet als offizieller Abgabenachweis gemäß § 43 BBiG.</strong>
+        </div>
       </div>
     </div>
+
   </main>
 </div>
+
+<!-- Footer -->
+<footer class="app-footer">
+  <a href="https://github.com/drofji/apprenticeship-report-generator" target="_blank" rel="noopener">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.604-3.369-1.342-3.369-1.342-.454-1.154-1.11-1.461-1.11-1.461-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
+    <span style="font-weight:600;">drofji/apprenticeship-report-generator</span>
+    <span class="sep">·</span>
+    <span>© 2026</span>
+  </a>
+</footer>
 </div>
 
 <!-- Print Container -->
@@ -438,58 +372,25 @@ textarea { resize: vertical; min-height: 80px; }
   <div class="modal">
     <div class="modal-header">
       <span class="modal-title" id="modalTitle">Neuer Bericht</span>
-      <button class="modal-close" onclick="closeEntryModal()">✕</button>
+      <button class="modal-close" onclick="closeEntryModal()">&#x2715;</button>
     </div>
     <div class="modal-body">
       <div class="form-grid">
-        <div class="form-group">
-          <label>Kalenderwoche</label>
-          <input type="number" id="eKW" min="1" max="53" placeholder="z.B. 42" oninput="onKWOrYearChange()">
-        </div>
-        <div class="form-group">
-          <label>Jahr</label>
-          <input type="number" id="eYear" placeholder="z.B. 2024" oninput="onKWOrYearChange()">
-        </div>
-        <div class="form-group">
-          <label>Datum von (Mo)</label>
-          <input type="date" id="eFrom" onchange="onDateFromChange()">
-        </div>
-        <div class="form-group">
-          <label>Datum bis (Fr)</label>
-          <input type="date" id="eTo" onchange="onDateToChange()">
-        </div>
-        <div class="form-group full">
-          <label>Tätigkeiten / Beschreibung</label>
-          <textarea id="eDescription" rows="5" placeholder="Beschreiben Sie Ihre Tätigkeiten dieser Woche..."></textarea>
-        </div>
-        <div class="form-group full">
-          <label>Arbeitsstunden gesamt (Woche)</label>
-          <input type="number" id="eHours" min="0" max="80" step="0.5" placeholder="z.B. 40">
-        </div>
+        <div class="form-group"><label>Kalenderwoche</label><input type="number" id="eKW" min="1" max="53" placeholder="z.B. 42" oninput="onKWOrYearChange()"></div>
+        <div class="form-group"><label>Jahr</label><input type="number" id="eYear" placeholder="z.B. 2024" oninput="onKWOrYearChange()"></div>
+        <div class="form-group"><label>Datum von (Mo)</label><input type="date" id="eFrom" onchange="onDateFromChange()"></div>
+        <div class="form-group"><label>Datum bis (Fr)</label><input type="date" id="eTo" onchange="onDateToChange()"></div>
+        <div class="form-group full"><label>Tätigkeiten / Beschreibung</label><textarea id="eDescription" rows="5" placeholder="Beschreiben Sie Ihre Tätigkeiten dieser Woche..."></textarea></div>
+        <div class="form-group full"><label>Arbeitsstunden gesamt (Woche)</label><input type="number" id="eHours" min="0" max="80" step="0.5" placeholder="z.B. 40"></div>
       </div>
       <div style="margin-top:16px;">
         <label style="font-size:12px;font-weight:600;color:#444444;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:10px;">Anwesenheit (in Tagen)</label>
         <div class="days-row">
-          <div class="day-input-group">
-            <label>🏢 Betrieb</label>
-            <input type="number" id="eDaysBetrieb" min="0" max="5" step="0.5" value="0">
-          </div>
-          <div class="day-input-group">
-            <label>🏠 Homeoffice</label>
-            <input type="number" id="eDaysHome" min="0" max="5" step="0.5" value="0">
-          </div>
-          <div class="day-input-group">
-            <label>🎓 Schule</label>
-            <input type="number" id="eDaysSchool" min="0" max="5" step="0.5" value="0">
-          </div>
-          <div class="day-input-group">
-            <label>🤒 Krank</label>
-            <input type="number" id="eDaysSick" min="0" max="5" step="0.5" value="0">
-          </div>
-          <div class="day-input-group">
-            <label>🌴 Urlaub</label>
-            <input type="number" id="eDaysVacation" min="0" max="5" step="0.5" value="0">
-          </div>
+          <div class="day-input-group"><label>&#x1F3E2; Betrieb</label><input type="number" id="eDaysBetrieb" min="0" max="5" step="0.5" value="0"></div>
+          <div class="day-input-group"><label>&#x1F3E0; Homeoffice</label><input type="number" id="eDaysHome" min="0" max="5" step="0.5" value="0"></div>
+          <div class="day-input-group"><label>&#x1F393; Schule</label><input type="number" id="eDaysSchool" min="0" max="5" step="0.5" value="0"></div>
+          <div class="day-input-group"><label>&#x1F912; Krank</label><input type="number" id="eDaysSick" min="0" max="5" step="0.5" value="0"></div>
+          <div class="day-input-group"><label>&#x1F334; Urlaub</label><input type="number" id="eDaysVacation" min="0" max="5" step="0.5" value="0"></div>
         </div>
       </div>
     </div>
@@ -504,7 +405,7 @@ textarea { resize: vertical; min-height: 80px; }
 <!-- Confirm Dialog -->
 <div class="confirm-overlay" id="confirmOverlay">
   <div class="confirm-box">
-    <div class="confirm-icon" id="confirmIcon">⚠️</div>
+    <div class="confirm-icon" id="confirmIcon">&#x26A0;&#xFE0F;</div>
     <div class="confirm-title" id="confirmTitle">Sind Sie sicher?</div>
     <div class="confirm-text" id="confirmText">Diese Aktion kann nicht rückgängig gemacht werden.</div>
     <div class="confirm-btns">
@@ -519,12 +420,9 @@ textarea { resize: vertical; min-height: 80px; }
 <script>
 // ===== IndexedDB =====
 let db;
-const DB_NAME = 'berichtsheft_v1';
-const DB_VER = 1;
-
 function initDB() {
   return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, DB_VER);
+    const req = indexedDB.open('berichtsheft_v1', 1);
     req.onupgradeneeded = e => {
       const d = e.target.result;
       if (!d.objectStoreNames.contains('profile')) d.createObjectStore('profile', { keyPath: 'id' });
@@ -534,47 +432,27 @@ function initDB() {
     req.onerror = () => reject(req.error);
   });
 }
-
 function dbGet(store, key) {
-  return new Promise((res, rej) => {
-    const r = db.transaction(store).objectStore(store).get(key);
-    r.onsuccess = () => res(r.result || null);
-    r.onerror = () => rej(r.error);
-  });
+  return new Promise((res, rej) => { const r = db.transaction(store).objectStore(store).get(key); r.onsuccess = () => res(r.result || null); r.onerror = () => rej(r.error); });
 }
 function dbGetAll(store) {
-  return new Promise((res, rej) => {
-    const r = db.transaction(store).objectStore(store).getAll();
-    r.onsuccess = () => res(r.result || []);
-    r.onerror = () => rej(r.error);
-  });
+  return new Promise((res, rej) => { const r = db.transaction(store).objectStore(store).getAll(); r.onsuccess = () => res(r.result || []); r.onerror = () => rej(r.error); });
 }
 function dbPut(store, data) {
-  return new Promise((res, rej) => {
-    const r = db.transaction(store, 'readwrite').objectStore(store).put(data);
-    r.onsuccess = () => res(r.result);
-    r.onerror = () => rej(r.error);
-  });
+  return new Promise((res, rej) => { const r = db.transaction(store,'readwrite').objectStore(store).put(data); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
 }
 function dbDelete(store, key) {
-  return new Promise((res, rej) => {
-    const r = db.transaction(store, 'readwrite').objectStore(store).delete(key);
-    r.onsuccess = () => res();
-    r.onerror = () => rej(r.error);
-  });
+  return new Promise((res, rej) => { const r = db.transaction(store,'readwrite').objectStore(store).delete(key); r.onsuccess = () => res(); r.onerror = () => rej(r.error); });
 }
 function dbClear(store) {
-  return new Promise((res, rej) => {
-    const r = db.transaction(store, 'readwrite').objectStore(store).clear();
-    r.onsuccess = () => res();
-    r.onerror = () => rej(r.error);
-  });
+  return new Promise((res, rej) => { const r = db.transaction(store,'readwrite').objectStore(store).clear(); r.onsuccess = () => res(); r.onerror = () => rej(r.error); });
 }
 
 // ===== State =====
 let profile = {};
 let currentEditId = null;
 let confirmCallback = null;
+let currentPrintMode = 'full';
 
 // ===== Navigation =====
 function showPage(name) {
@@ -587,6 +465,17 @@ function showPage(name) {
   if (name === 'entries') renderEntries();
   if (name === 'profile') loadProfileForm();
   if (name === 'print') document.getElementById('printYear').value = new Date().getFullYear();
+}
+
+// ===== Print Mode =====
+function setPrintMode(mode) {
+  currentPrintMode = mode;
+  document.getElementById('modeCardFull').classList.toggle('active', mode === 'full');
+  document.getElementById('modeCardCompact').classList.toggle('active', mode === 'compact');
+  document.getElementById('compactOptions').style.display = mode === 'compact' ? 'block' : 'none';
+  document.getElementById('printCardTitle').textContent = mode === 'full' ? 'Detailliert — Optionen' : 'Kompakt — Optionen';
+  document.getElementById('printHintFull').style.display = mode === 'full' ? 'block' : 'none';
+  document.getElementById('printHintCompact').style.display = mode === 'compact' ? 'block' : 'none';
 }
 
 // ===== Toast =====
@@ -621,14 +510,10 @@ function resolveConfirm(val) {
 function fmtDate(d) {
   if (!d) return '';
   const p = d.split('-');
-  if (p.length !== 3) return d;
-  return p[2] + '.' + p[1] + '.' + p[0];
+  return p.length === 3 ? p[2] + '.' + p[1] + '.' + p[0] : d;
 }
 function toInputDate(d) {
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  return yyyy + '-' + mm + '-' + dd;
+  return d.getUTCFullYear() + '-' + String(d.getUTCMonth()+1).padStart(2,'0') + '-' + String(d.getUTCDate()).padStart(2,'0');
 }
 function getISOWeek(date) {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -636,12 +521,60 @@ function getISOWeek(date) {
   const y = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
   return Math.ceil((((d - y) / 86400000) + 1) / 7);
 }
+function getISOWeekYear(date) {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+  return d.getUTCFullYear();
+}
 function getMondayOfKW(kw, year) {
   const jan4 = new Date(Date.UTC(year, 0, 4));
   const dow = jan4.getUTCDay() || 7;
   const monday = new Date(jan4);
   monday.setUTCDate(jan4.getUTCDate() - (dow - 1) + (kw - 1) * 7);
   return monday;
+}
+
+// ===== KW <-> Date sync =====
+let _syncLock = false;
+function onKWOrYearChange() {
+  if (_syncLock) return;
+  const kw = parseInt(document.getElementById('eKW').value);
+  const year = parseInt(document.getElementById('eYear').value);
+  if (!kw || kw < 1 || kw > 53 || !year || year < 2000) return;
+  _syncLock = true;
+  const monday = getMondayOfKW(kw, year);
+  const friday = new Date(monday); friday.setUTCDate(friday.getUTCDate() + 4);
+  document.getElementById('eFrom').value = toInputDate(monday);
+  document.getElementById('eTo').value = toInputDate(friday);
+  _syncLock = false;
+}
+function onDateFromChange() {
+  if (_syncLock) return;
+  const val = document.getElementById('eFrom').value;
+  if (!val) return;
+  _syncLock = true;
+  const d = new Date(val + 'T00:00:00');
+  const kw = getISOWeek(d); const year = getISOWeekYear(d);
+  document.getElementById('eKW').value = kw;
+  document.getElementById('eYear').value = year;
+  const monday = getMondayOfKW(kw, year);
+  const friday = new Date(monday); friday.setUTCDate(friday.getUTCDate() + 4);
+  document.getElementById('eTo').value = toInputDate(friday);
+  _syncLock = false;
+}
+function onDateToChange() {
+  if (_syncLock) return;
+  const val = document.getElementById('eTo').value;
+  if (!val) return;
+  _syncLock = true;
+  const d = new Date(val + 'T00:00:00');
+  const kw = getISOWeek(d); const year = getISOWeekYear(d);
+  document.getElementById('eKW').value = kw;
+  document.getElementById('eYear').value = year;
+  if (!document.getElementById('eFrom').value) {
+    document.getElementById('eFrom').value = toInputDate(getMondayOfKW(kw, year));
+  }
+  _syncLock = false;
 }
 
 // ===== Profile =====
@@ -665,7 +598,6 @@ function updateConfirmPreview() {
 }
 document.getElementById('pFirstName').addEventListener('input', updateConfirmPreview);
 document.getElementById('pLastName').addEventListener('input', updateConfirmPreview);
-
 async function saveProfile() {
   const data = {
     id: 'main',
@@ -689,75 +621,57 @@ async function saveProfile() {
 async function renderDashboard() {
   profile = (await dbGet('profile', 'main')) || {};
   const entries = await dbGetAll('entries');
-
   const hasProfile = profile.firstName || profile.lastName;
   const el = document.getElementById('profileSummary');
   if (hasProfile) {
     el.style.display = 'flex';
     const name = (profile.firstName + ' ' + profile.lastName).trim();
     document.getElementById('summaryName').textContent = name;
-    document.getElementById('avatarInitials').textContent = ((profile.firstName || 'A')[0] + (profile.lastName || 'W')[0]).toUpperCase();
-    let details = profile.profession || 'Auszubildende/r';
-    if (profile.company) details += ' · ' + profile.company;
-    if (profile.ausbilder) details += ' · Ausbilder: ' + profile.ausbilder;
-    document.getElementById('summaryDetails').textContent = details;
-  } else {
-    el.style.display = 'none';
-  }
-
+    document.getElementById('avatarInitials').textContent = ((profile.firstName||'A')[0] + (profile.lastName||'W')[0]).toUpperCase();
+    let det = profile.profession || 'Auszubildende/r';
+    if (profile.company) det += ' · ' + profile.company;
+    if (profile.ausbilder) det += ' · Ausbilder: ' + profile.ausbilder;
+    document.getElementById('summaryDetails').textContent = det;
+  } else { el.style.display = 'none'; }
   document.getElementById('statTotal').textContent = entries.length;
-  document.getElementById('statOffice').textContent = entries.reduce((s, e) => s + (parseFloat(e.daysBetrieb) || 0), 0);
-  document.getElementById('statHome').textContent = entries.reduce((s, e) => s + (parseFloat(e.daysHome) || 0), 0);
-  document.getElementById('statSchool').textContent = entries.reduce((s, e) => s + (parseFloat(e.daysSchool) || 0), 0);
-
-  const recent = [...entries].sort((a, b) => (b.year * 100 + b.kw) - (a.year * 100 + a.kw)).slice(0, 5);
+  document.getElementById('statOffice').textContent = entries.reduce((s,e) => s + (parseFloat(e.daysBetrieb)||0), 0);
+  document.getElementById('statHome').textContent = entries.reduce((s,e) => s + (parseFloat(e.daysHome)||0), 0);
+  document.getElementById('statSchool').textContent = entries.reduce((s,e) => s + (parseFloat(e.daysSchool)||0), 0);
+  const recent = [...entries].sort((a,b) => (b.year*100+b.kw)-(a.year*100+a.kw)).slice(0,5);
   const c = document.getElementById('recentEntries');
   if (recent.length === 0) {
     c.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><p>Noch keine Berichte vorhanden.</p><button class="btn btn-primary" onclick="showPage(\'entries\')">Ersten Bericht erstellen</button></div>';
-  } else {
-    c.innerHTML = recent.map(e => entryHTML(e)).join('');
-  }
+  } else { c.innerHTML = recent.map(e => entryHTML(e)).join(''); }
 }
 
 // ===== Entries =====
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function entryHTML(e) {
   const tags = [];
-  if (e.daysBetrieb > 0) tags.push('<span class="tag tag-office">🏢 ' + e.daysBetrieb + 'T Betrieb</span>');
-  if (e.daysHome > 0) tags.push('<span class="tag tag-home">🏠 ' + e.daysHome + 'T Homeoffice</span>');
-  if (e.daysSchool > 0) tags.push('<span class="tag tag-school">🎓 ' + e.daysSchool + 'T Schule</span>');
-  if (e.daysSick > 0) tags.push('<span class="tag tag-sick">🤒 ' + e.daysSick + 'T Krank</span>');
-  if (e.daysVacation > 0) tags.push('<span class="tag tag-vacation">🌴 ' + e.daysVacation + 'T Urlaub</span>');
-  const dateRange = e.dateFrom && e.dateTo ? fmtDate(e.dateFrom) + ' – ' + fmtDate(e.dateTo) : '';
-  const desc = e.description ? e.description.substring(0, 90) + (e.description.length > 90 ? '…' : '') : '(keine Beschreibung)';
-  const meta = [dateRange, e.hours ? e.hours + ' Std.' : ''].filter(Boolean).join(' · ');
-  return '<div class="week-item" onclick="openEntryModal(' + e.id + ')">'
-    + '<div class="week-item-left">'
-    + '<div class="week-badge">KW ' + e.kw + ' / ' + e.year + '</div>'
-    + '<div>'
-    + '<div class="week-item-title">' + escHtml(desc) + '</div>'
-    + (meta ? '<div class="week-item-meta">' + meta + '</div>' : '')
-    + '<div class="week-item-tags">' + tags.join('') + '</div>'
-    + '</div></div>'
-    + '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" style="flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>'
-    + '</div>';
+  if (e.daysBetrieb > 0) tags.push('<span class="tag tag-office">&#x1F3E2; '+e.daysBetrieb+'T</span>');
+  if (e.daysHome > 0) tags.push('<span class="tag tag-home">&#x1F3E0; '+e.daysHome+'T</span>');
+  if (e.daysSchool > 0) tags.push('<span class="tag tag-school">&#x1F393; '+e.daysSchool+'T</span>');
+  if (e.daysSick > 0) tags.push('<span class="tag tag-sick">&#x1F912; '+e.daysSick+'T</span>');
+  if (e.daysVacation > 0) tags.push('<span class="tag tag-vacation">&#x1F334; '+e.daysVacation+'T</span>');
+  const dr = e.dateFrom && e.dateTo ? fmtDate(e.dateFrom) + ' – ' + fmtDate(e.dateTo) : '';
+  const desc = e.description ? escHtml(e.description.substring(0,90)) + (e.description.length>90?'…':'') : '(keine Beschreibung)';
+  const meta = [dr, e.hours ? e.hours+' Std.' : ''].filter(Boolean).join(' · ');
+  return '<div class="week-item" onclick="openEntryModal('+e.id+')">'
+    +'<div class="week-item-left"><div class="week-badge">KW '+e.kw+' / '+e.year+'</div>'
+    +'<div><div class="week-item-title">'+desc+'</div>'
+    +(meta?'<div class="week-item-meta">'+meta+'</div>':'')
+    +'<div class="week-item-tags">'+tags.join('')+'</div></div></div>'
+    +'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>';
 }
-function escHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
 async function renderEntries() {
   const entries = await dbGetAll('entries');
-  const q = (document.getElementById('searchInput').value || '').toLowerCase();
-  const filtered = entries.filter(e =>
-    !q || (e.description || '').toLowerCase().includes(q) || String(e.kw).includes(q) || String(e.year).includes(q)
-  ).sort((a, b) => (b.year * 100 + b.kw) - (a.year * 100 + a.kw));
-
+  const q = (document.getElementById('searchInput').value||'').toLowerCase();
+  const filtered = entries.filter(e => !q||(e.description||'').toLowerCase().includes(q)||String(e.kw).includes(q)||String(e.year).includes(q))
+    .sort((a,b)=>(b.year*100+b.kw)-(a.year*100+a.kw));
   const c = document.getElementById('entriesContainer');
   if (filtered.length === 0) {
-    c.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><p>' + (q ? 'Keine Berichte gefunden.' : 'Noch keine Berichte vorhanden.') + '</p>' + (!q ? '<button class="btn btn-primary" onclick="openEntryModal(null)">Ersten Bericht erstellen</button>' : '') + '</div>';
-  } else {
-    c.innerHTML = filtered.map(e => entryHTML(e)).join('');
-  }
+    c.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><p>'+(q?'Keine Berichte gefunden.':'Noch keine Berichte vorhanden.')+'</p>'+(!q?'<button class="btn btn-primary" onclick="openEntryModal(null)">Ersten Bericht erstellen</button>':'')+'</div>';
+  } else { c.innerHTML = filtered.map(e => entryHTML(e)).join(''); }
 }
 
 // ===== Modal =====
@@ -765,401 +679,341 @@ async function openEntryModal(id) {
   currentEditId = id;
   document.getElementById('deleteEntryBtn').style.display = id ? 'inline-flex' : 'none';
   document.getElementById('modalTitle').textContent = id ? 'Bericht bearbeiten' : 'Neuer Bericht';
-
   if (id) {
     const entries = await dbGetAll('entries');
     const e = entries.find(x => x.id === id);
     if (e) {
-      document.getElementById('eKW').value = e.kw || '';
-      document.getElementById('eYear').value = e.year || '';
-      document.getElementById('eFrom').value = e.dateFrom || '';
-      document.getElementById('eTo').value = e.dateTo || '';
-      document.getElementById('eDescription').value = e.description || '';
-      document.getElementById('eHours').value = e.hours || '';
-      document.getElementById('eDaysBetrieb').value = e.daysBetrieb || 0;
-      document.getElementById('eDaysHome').value = e.daysHome || 0;
-      document.getElementById('eDaysSchool').value = e.daysSchool || 0;
-      document.getElementById('eDaysSick').value = e.daysSick || 0;
-      document.getElementById('eDaysVacation').value = e.daysVacation || 0;
+      document.getElementById('eKW').value = e.kw||''; document.getElementById('eYear').value = e.year||'';
+      document.getElementById('eFrom').value = e.dateFrom||''; document.getElementById('eTo').value = e.dateTo||'';
+      document.getElementById('eDescription').value = e.description||''; document.getElementById('eHours').value = e.hours||'';
+      document.getElementById('eDaysBetrieb').value = e.daysBetrieb||0; document.getElementById('eDaysHome').value = e.daysHome||0;
+      document.getElementById('eDaysSchool').value = e.daysSchool||0; document.getElementById('eDaysSick').value = e.daysSick||0;
+      document.getElementById('eDaysVacation').value = e.daysVacation||0;
     }
   } else {
-    document.getElementById('eKW').value = '';
-    document.getElementById('eYear').value = new Date().getFullYear();
-    document.getElementById('eFrom').value = '';
-    document.getElementById('eTo').value = '';
-    document.getElementById('eDescription').value = '';
-    document.getElementById('eHours').value = (profile && profile.weeklyHours) ? profile.weeklyHours : 40;
-    document.getElementById('eDaysBetrieb').value = 0;
-    document.getElementById('eDaysHome').value = 0;
-    document.getElementById('eDaysSchool').value = 0;
-    document.getElementById('eDaysSick').value = 0;
-    document.getElementById('eDaysVacation').value = 0;
+    document.getElementById('eKW').value=''; document.getElementById('eYear').value=new Date().getFullYear();
+    document.getElementById('eFrom').value=''; document.getElementById('eTo').value='';
+    document.getElementById('eDescription').value=''; document.getElementById('eHours').value=(profile&&profile.weeklyHours)?profile.weeklyHours:40;
+    document.getElementById('eDaysBetrieb').value=0; document.getElementById('eDaysHome').value=0;
+    document.getElementById('eDaysSchool').value=0; document.getElementById('eDaysSick').value=0;
+    document.getElementById('eDaysVacation').value=0;
   }
   document.getElementById('entryModal').classList.add('open');
 }
-function closeEntryModal() {
-  document.getElementById('entryModal').classList.remove('open');
-  currentEditId = null;
-}
+function closeEntryModal() { document.getElementById('entryModal').classList.remove('open'); currentEditId = null; }
 async function saveEntry() {
   const kw = parseInt(document.getElementById('eKW').value);
   const year = parseInt(document.getElementById('eYear').value);
-  if (!kw || kw < 1 || kw > 53) { toast('Bitte eine gültige Kalenderwoche (1–53) eingeben.', 'error'); return; }
-  if (!year || year < 2000) { toast('Bitte ein gültiges Jahr eingeben.', 'error'); return; }
-
+  if (!kw||kw<1||kw>53) { toast('Bitte eine gültige Kalenderwoche (1–53) eingeben.','error'); return; }
+  if (!year||year<2000) { toast('Bitte ein gültiges Jahr eingeben.','error'); return; }
   const data = {
     kw, year,
-    dateFrom: document.getElementById('eFrom').value,
-    dateTo: document.getElementById('eTo').value,
+    dateFrom: document.getElementById('eFrom').value, dateTo: document.getElementById('eTo').value,
     description: document.getElementById('eDescription').value.trim(),
-    hours: parseFloat(document.getElementById('eHours').value) || 0,
-    daysBetrieb: parseFloat(document.getElementById('eDaysBetrieb').value) || 0,
-    daysHome: parseFloat(document.getElementById('eDaysHome').value) || 0,
-    daysSchool: parseFloat(document.getElementById('eDaysSchool').value) || 0,
-    daysSick: parseFloat(document.getElementById('eDaysSick').value) || 0,
-    daysVacation: parseFloat(document.getElementById('eDaysVacation').value) || 0,
+    hours: parseFloat(document.getElementById('eHours').value)||0,
+    daysBetrieb: parseFloat(document.getElementById('eDaysBetrieb').value)||0,
+    daysHome: parseFloat(document.getElementById('eDaysHome').value)||0,
+    daysSchool: parseFloat(document.getElementById('eDaysSchool').value)||0,
+    daysSick: parseFloat(document.getElementById('eDaysSick').value)||0,
+    daysVacation: parseFloat(document.getElementById('eDaysVacation').value)||0,
     updatedAt: new Date().toISOString(),
   };
   if (currentEditId) data.id = currentEditId;
-
   await dbPut('entries', data);
   closeEntryModal();
   toast(currentEditId ? 'Bericht aktualisiert!' : 'Bericht gespeichert!', 'success');
-  renderEntries();
-  renderDashboard();
+  renderEntries(); renderDashboard();
 }
 async function deleteCurrentEntry() {
-  const ok = await showConfirm('Bericht löschen?', 'Dieser Bericht wird unwiderruflich gelöscht. Fortfahren?', '🗑️', 'Löschen', 'btn-danger');
+  const ok = await showConfirm('Bericht löschen?','Dieser Bericht wird unwiderruflich gelöscht.','🗑️','Löschen','btn-danger');
   if (!ok) return;
   await dbDelete('entries', currentEditId);
-  closeEntryModal();
-  toast('Bericht gelöscht.', '');
-  renderEntries();
-  renderDashboard();
-}
-
-// ===== KW <-> Datum Synchronisation =====
-let _syncLock = false;
-
-function onKWOrYearChange() {
-  if (_syncLock) return;
-  const kw = parseInt(document.getElementById('eKW').value);
-  const year = parseInt(document.getElementById('eYear').value);
-  if (!kw || kw < 1 || kw > 53 || !year || year < 2000) return;
-  _syncLock = true;
-  const monday = getMondayOfKW(kw, year);
-  const friday = new Date(monday);
-  friday.setUTCDate(friday.getUTCDate() + 4);
-  document.getElementById('eFrom').value = toInputDate(monday);
-  document.getElementById('eTo').value = toInputDate(friday);
-  _syncLock = false;
-}
-
-function onDateFromChange() {
-  if (_syncLock) return;
-  const val = document.getElementById('eFrom').value;
-  if (!val) return;
-  _syncLock = true;
-  const d = new Date(val + 'T00:00:00');
-  const kw = getISOWeek(d);
-  const year = getISOWeekYear(d);
-  document.getElementById('eKW').value = kw;
-  document.getElementById('eYear').value = year;
-  // Setzt Freitag der gleichen Woche
-  const monday = getMondayOfKW(kw, year);
-  const friday = new Date(monday);
-  friday.setUTCDate(friday.getUTCDate() + 4);
-  document.getElementById('eTo').value = toInputDate(friday);
-  _syncLock = false;
-}
-
-function onDateToChange() {
-  if (_syncLock) return;
-  const val = document.getElementById('eTo').value;
-  if (!val) return;
-  _syncLock = true;
-  const d = new Date(val + 'T00:00:00');
-  const kw = getISOWeek(d);
-  const year = getISOWeekYear(d);
-  document.getElementById('eKW').value = kw;
-  document.getElementById('eYear').value = year;
-  // Setzt Montag der gleichen Woche, wenn "Von" leer ist
-  if (!document.getElementById('eFrom').value) {
-    const monday = getMondayOfKW(kw, year);
-    document.getElementById('eFrom').value = toInputDate(monday);
-  }
-  _syncLock = false;
-}
-
-// Gibt das ISO-Jahr (kann vom Kalenderjahr abweichen, z.B. KW1 in Dez)
-function getISOWeekYear(date) {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-  return d.getUTCFullYear();
+  closeEntryModal(); toast('Bericht gelöscht.',''); renderEntries(); renderDashboard();
 }
 
 // ===== Auto KW =====
 function autoFillKW() {
-  const now = new Date();
-  const kw = getISOWeek(now);
-  const year = now.getFullYear();
+  const now = new Date(); const kw = getISOWeek(now); const year = now.getFullYear();
   currentEditId = null;
   document.getElementById('deleteEntryBtn').style.display = 'none';
   document.getElementById('modalTitle').textContent = 'Neuer Bericht';
-  document.getElementById('eKW').value = kw;
-  document.getElementById('eYear').value = year;
+  document.getElementById('eKW').value = kw; document.getElementById('eYear').value = year;
   const monday = getMondayOfKW(kw, year);
-  const friday = new Date(monday);
-  friday.setUTCDate(friday.getUTCDate() + 4);
-  document.getElementById('eFrom').value = toInputDate(monday);
-  document.getElementById('eTo').value = toInputDate(friday);
+  const friday = new Date(monday); friday.setUTCDate(friday.getUTCDate()+4);
+  document.getElementById('eFrom').value = toInputDate(monday); document.getElementById('eTo').value = toInputDate(friday);
   document.getElementById('eDescription').value = '';
-  document.getElementById('eHours').value = (profile && profile.weeklyHours) ? profile.weeklyHours : 40;
-  document.getElementById('eDaysBetrieb').value = 0;
-  document.getElementById('eDaysHome').value = 0;
-  document.getElementById('eDaysSchool').value = 0;
-  document.getElementById('eDaysSick').value = 0;
-  document.getElementById('eDaysVacation').value = 0;
+  document.getElementById('eHours').value = (profile&&profile.weeklyHours)?profile.weeklyHours:40;
+  document.getElementById('eDaysBetrieb').value=0; document.getElementById('eDaysHome').value=0;
+  document.getElementById('eDaysSchool').value=0; document.getElementById('eDaysSick').value=0; document.getElementById('eDaysVacation').value=0;
   document.getElementById('entryModal').classList.add('open');
 }
 
-// ===== Export =====
+// ===== Export JSON =====
 async function exportData() {
-  const p = (await dbGet('profile', 'main')) || {};
+  const p = (await dbGet('profile','main'))||{};
   const entries = await dbGetAll('entries');
-  const blob = new Blob([JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), profile: p, entries }, null, 2)], { type: 'application/json' });
+  const blob = new Blob([JSON.stringify({version:1,exportedAt:new Date().toISOString(),profile:p,entries},null,2)],{type:'application/json'});
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'berichtsheft_' + new Date().toISOString().split('T')[0] + '.json';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  toast('Export erfolgreich! (' + entries.length + ' Berichte)', 'success');
+  const a = document.createElement('a'); a.href=url;
+  a.download='berichtsheft_'+new Date().toISOString().split('T')[0]+'.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  toast('Export erfolgreich! ('+entries.length+' Berichte)','success');
 }
 
-// ===== Import =====
+// ===== Import JSON =====
 async function importData(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  event.target.value = '';
-
-  const ok = await showConfirm(
-    'Daten importieren?',
-    'Alle vorhandenen Daten (Stammdaten und alle Berichte) werden durch die importierten Daten überschrieben. Diese Aktion kann nicht rückgängig gemacht werden.',
-    '📥', 'Ja, importieren', 'btn-primary'
-  );
+  const file = event.target.files[0]; if (!file) return; event.target.value='';
+  const ok = await showConfirm('Daten importieren?','Alle vorhandenen Daten werden überschrieben. Fortfahren?','📥','Ja, importieren','btn-primary');
   if (!ok) return;
-
   try {
-    const text = await file.text();
-    const data = JSON.parse(text);
-    if (!data.version || !Array.isArray(data.entries)) throw new Error('Ungültiges Dateiformat');
-
-    await dbClear('entries');
-    await dbClear('profile');
-
-    if (data.profile) await dbPut('profile', { id: 'main', ...data.profile });
-
-    for (const entry of data.entries) {
-      const { id, ...rest } = entry;
-      await dbPut('entries', rest);
-    }
-
-    profile = (await dbGet('profile', 'main')) || {};
-    toast('Import erfolgreich! ' + data.entries.length + ' Berichte importiert.', 'success');
-    renderDashboard();
-    renderEntries();
-  } catch (e) {
-    toast('Fehler beim Importieren: ' + e.message, 'error');
-  }
+    const data = JSON.parse(await file.text());
+    if (!data.version||!Array.isArray(data.entries)) throw new Error('Ungültiges Format');
+    await dbClear('entries'); await dbClear('profile');
+    if (data.profile) await dbPut('profile',{id:'main',...data.profile});
+    for (const entry of data.entries) { const {id,...rest}=entry; await dbPut('entries',rest); }
+    profile = (await dbGet('profile','main'))||{};
+    toast('Import erfolgreich! '+data.entries.length+' Berichte importiert.','success');
+    renderDashboard(); renderEntries();
+  } catch(e) { toast('Fehler beim Importieren: '+e.message,'error'); }
 }
 
-// ===== PDF Download =====
+// ===== PDF: load scripts =====
 function loadScript(src) {
   return new Promise((resolve, reject) => {
-    if (document.querySelector('script[src="' + src + '"]')) { resolve(); return; }
+    if (document.querySelector('script[src="'+src+'"]')) { resolve(); return; }
     const s = document.createElement('script');
-    s.src = src;
-    s.onload = resolve;
-    s.onerror = () => reject(new Error('Skript konnte nicht geladen werden: ' + src));
+    s.src = src; s.onload = resolve;
+    s.onerror = () => reject(new Error('Skript nicht ladbar: '+src));
     document.head.appendChild(s);
   });
 }
 
-async function printReports(filtered) {
-  profile = (await dbGet('profile', 'main')) || {};
-  let entries = await dbGetAll('entries');
-
-  if (filtered) {
-    const from = parseInt(document.getElementById('printFrom').value) || 1;
-    const to   = parseInt(document.getElementById('printTo').value)   || 53;
-    const year = parseInt(document.getElementById('printYear').value) || 0;
-    entries = entries.filter(e => {
-      if (year && e.year !== year) return false;
-      return e.kw >= from && e.kw <= to;
-    });
-  }
-
-  entries.sort((a, b) => (a.year * 100 + a.kw) - (b.year * 100 + b.kw));
-  if (entries.length === 0) { toast('Keine Berichte für den gewählten Zeitraum gefunden.', 'error'); return; }
-
-  toast('PDF wird erstellt… bitte warten.');
-
-  try {
-    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
-    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
-  } catch(err) {
-    toast('Bibliothek konnte nicht geladen werden. Internetverbindung prüfen.', 'error');
-    return;
-  }
-
-  const fullName = ((profile.firstName || '') + ' ' + (profile.lastName || '')).trim() || 'Alexander Wiese';
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
-  const A4_W = 210, A4_H = 297;
-
-  // Render each page separately so styles are fully applied
-  for (let i = 0; i < entries.length; i++) {
-    const e = entries[i];
-
-    // Build isolated iframe so page styles don't bleed
-    const iframe = document.createElement('iframe');
-    iframe.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;height:1123px;border:none;visibility:hidden;';
-    document.body.appendChild(iframe);
-
-    const pageHTML = buildPrintPage(e, profile, fullName, i + 1, entries.length);
-    const iDoc = iframe.contentDocument || iframe.contentWindow.document;
-    iDoc.open();
-    iDoc.write('<!DOCTYPE html><html><head><meta charset="UTF-8">'
-      + '<style>*{box-sizing:border-box;margin:0;padding:0;}body{background:#fff;}</style>'
-      + '</head><body>' + pageHTML + '</body></html>');
-    iDoc.close();
-
-    // Wait for fonts/layout
-    await new Promise(r => setTimeout(r, 300));
-
-    const pageEl = iDoc.body.firstElementChild;
-    const canvas = await html2canvas(pageEl, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: '#ffffff',
-      width: 794,
-      windowWidth: 794,
-      logging: false,
-    });
-
-    document.body.removeChild(iframe);
-
-    const imgData = canvas.toDataURL('image/jpeg', 0.97);
-    if (i > 0) doc.addPage();
-    doc.addImage(imgData, 'JPEG', 0, 0, A4_W, A4_H);
-  }
-
-  const filename = 'Berichtsheft_' + fullName.replace(/ /g, '_') + '_' + new Date().toISOString().split('T')[0] + '.pdf';
-  doc.save(filename);
-  toast('PDF erfolgreich heruntergeladen! (' + entries.length + ' Seiten)', 'success');
+async function loadPdfLibs() {
+  await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+  await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
 }
 
-function buildPrintPage(e, p, fullName, pageNum, total) {
-  const dateRange = (e.dateFrom && e.dateTo) ? fmtDate(e.dateFrom) + ' – ' + fmtDate(e.dateTo) : '–';
-  const birthdate = p.birthdate ? fmtDate(p.birthdate) : '–';
-  const desc = (e.description || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+async function renderPageToCanvas(html) {
+  const iframe = document.createElement('iframe');
+  iframe.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;height:1123px;border:none;visibility:hidden;';
+  document.body.appendChild(iframe);
+  const iDoc = iframe.contentDocument || iframe.contentWindow.document;
+  iDoc.open();
+  iDoc.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{box-sizing:border-box;margin:0;padding:0;}body{background:#fff;}</style></head><body>' + html + '</body></html>');
+  iDoc.close();
+  await new Promise(r => setTimeout(r, 320));
+  const canvas = await html2canvas(iDoc.body.firstElementChild, {
+    scale: 2, useCORS: true, backgroundColor: '#ffffff',
+    width: 794, windowWidth: 794, logging: false,
+  });
+  document.body.removeChild(iframe);
+  return canvas;
+}
 
-  // 794px = A4 width at 96dpi; all sizes in px for reliable html2canvas rendering
-  return `<div style="background:#fff;width:794px;min-height:1123px;padding:56px 68px 76px;font-family:'Times New Roman',serif;font-size:13px;color:#000;box-sizing:border-box;position:relative;">
+// ===== PDF: main =====
+async function printReports(filtered) {
+  profile = (await dbGet('profile','main'))||{};
+  let entries = await dbGetAll('entries');
+  if (filtered) {
+    const from = parseInt(document.getElementById('printFrom').value)||1;
+    const to   = parseInt(document.getElementById('printTo').value)||53;
+    const year = parseInt(document.getElementById('printYear').value)||0;
+    entries = entries.filter(e => { if(year&&e.year!==year) return false; return e.kw>=from&&e.kw<=to; });
+  }
+  entries.sort((a,b)=>(a.year*100+a.kw)-(b.year*100+b.kw));
+  if (entries.length===0) { toast('Keine Berichte für diesen Zeitraum gefunden.','error'); return; }
 
-  <div style="border-bottom:1px solid #000;padding-bottom:10px;margin-bottom:16px;">
-    <div style="font-size:20px;font-weight:bold;line-height:1.2;">Ausbildungsnachweis</div>
-    <div style="font-size:13px;color:#444;margin-top:3px;">gemäß § 43 Berufsbildungsgesetz (BBiG) – Wochenbericht</div>
+  toast('PDF wird erstellt… bitte warten.');
+  try { await loadPdfLibs(); } catch(e) { toast('Bibliothek nicht ladbar. Internetverbindung prüfen.','error'); return; }
+
+  const fullName = ((profile.firstName||'')+ ' '+(profile.lastName||'')).trim()||'Alexander Wiese';
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'mm', format:'a4', orientation:'portrait' });
+
+  if (currentPrintMode === 'full') {
+    // ---- DETAILED MODE: one entry per page ----
+    for (let i = 0; i < entries.length; i++) {
+      const html = buildPageDetailed(entries[i], profile, fullName, i+1, entries.length);
+      const canvas = await renderPageToCanvas(html);
+      if (i > 0) doc.addPage();
+      doc.addImage(canvas.toDataURL('image/jpeg',0.97), 'JPEG', 0, 0, 210, 297);
+    }
+  } else {
+    // ---- COMPACT MODE: N entries per page ----
+    const perPage = parseInt(document.getElementById('weeksPerPage').value)||6;
+    const chunks = [];
+    for (let i=0; i<entries.length; i+=perPage) chunks.push(entries.slice(i, i+perPage));
+    for (let ci=0; ci<chunks.length; ci++) {
+      const html = buildPageCompact(chunks[ci], profile, fullName, ci+1, chunks.length);
+      const canvas = await renderPageToCanvas(html);
+      if (ci > 0) doc.addPage();
+      doc.addImage(canvas.toDataURL('image/jpeg',0.97), 'JPEG', 0, 0, 210, 297);
+    }
+  }
+
+  const suffix = currentPrintMode === 'compact' ? '_kompakt' : '_detailliert';
+  doc.save('Berichtsheft_' + fullName.replace(/ /g,'_') + suffix + '_' + new Date().toISOString().split('T')[0] + '.pdf');
+  toast('PDF heruntergeladen! (' + entries.length + ' Berichte)', 'success');
+}
+
+// ===== PDF: detailed page template =====
+function buildPageDetailed(e, p, fullName, pageNum, total) {
+  const dr = (e.dateFrom&&e.dateTo)?fmtDate(e.dateFrom)+' – '+fmtDate(e.dateTo):'–';
+  const bd = p.birthdate?fmtDate(p.birthdate):'–';
+  const desc = escHtml(e.description||'').replace(/\n/g,'<br>');
+  const td1 = 'padding:5px 8px;border:1px solid #aaa;font-weight:bold;background:#f0f0f0;width:22%;vertical-align:top;font-size:11px;';
+  const td2 = 'padding:5px 8px;border:1px solid #aaa;width:28%;vertical-align:top;font-size:11px;';
+  const th  = 'background:#e0e0e0;border:1px solid #aaa;padding:6px 4px;text-align:center;font-size:11px;';
+  const td  = 'border:1px solid #aaa;padding:7px 4px;text-align:center;font-size:12px;';
+  return `<div style="background:#fff;width:794px;min-height:1123px;padding:52px 64px 70px;font-family:'Times New Roman',serif;font-size:13px;color:#000;box-sizing:border-box;position:relative;">
+  <div style="border-bottom:1.5px solid #000;padding-bottom:10px;margin-bottom:14px;">
+    <div style="font-size:20px;font-weight:bold;">Ausbildungsnachweis</div>
+    <div style="font-size:12px;color:#555;margin-top:3px;">gemäß § 43 Berufsbildungsgesetz (BBiG) – Wochenbericht</div>
+  </div>
+  <table style="width:100%;border-collapse:collapse;margin-bottom:12px;">
+    <tr><td style="${td1}">Name Auszubildende/r</td><td style="${td2}">${fullName}</td><td style="${td1}">Geburtsdatum</td><td style="${td2}">${bd}</td></tr>
+    <tr><td style="${td1}">Ausbildungsbetrieb</td><td style="${td2}">${escHtml(p.company||'–')}</td><td style="${td1}">Ausbilder/in</td><td style="${td2}">${escHtml(p.ausbilder||'–')}</td></tr>
+    <tr><td style="${td1}">Ausbildungsberuf</td><td style="${td2}">${escHtml(p.profession||'–')}</td><td style="${td1}">Ausbildungsdauer</td><td style="${td2}">${p.startDate?fmtDate(p.startDate):'–'} – ${p.endDate?fmtDate(p.endDate):'–'}</td></tr>
+    <tr><td style="${td1}">Berichtszeitraum</td><td style="${td2}">${dr}</td><td style="${td1}">Kalenderwoche</td><td style="${td2}"><strong>KW ${e.kw} / ${e.year}</strong></td></tr>
+  </table>
+  <div style="font-size:11px;font-weight:bold;margin-bottom:5px;">Beschreibung der Tätigkeiten:</div>
+  <div style="border:1px solid #aaa;padding:10px;min-height:175px;font-size:12px;line-height:1.6;word-break:break-word;margin-bottom:12px;">${desc}</div>
+  <table style="width:100%;border-collapse:collapse;margin-bottom:12px;">
+    <thead><tr>
+      <th style="${th}">Betrieb<br>(Tage)</th><th style="${th}">Homeoffice<br>(Tage)</th><th style="${th}">Berufsschule<br>(Tage)</th><th style="${th}">Krank<br>(Tage)</th><th style="${th}">Urlaub<br>(Tage)</th><th style="${th}">Stunden<br>gesamt</th>
+    </tr></thead>
+    <tbody><tr>
+      <td style="${td}">${e.daysBetrieb||0}</td><td style="${td}">${e.daysHome||0}</td><td style="${td}">${e.daysSchool||0}</td><td style="${td}">${e.daysSick||0}</td><td style="${td}">${e.daysVacation||0}</td><td style="${td}"><strong>${e.hours||0}</strong></td>
+    </tr></tbody>
+  </table>
+  <div style="border:1px solid #000;padding:11px;font-size:11px;line-height:1.6;background:#fafafa;margin-bottom:22px;">
+    <strong>Bestätigung gemäß § 43 BBiG:</strong><br>
+    Hiermit bestätigen wir, dass ${fullName} die gemäß § 43 Berufsbildungsgesetz erforderlichen Ausbildungsnachweise eigenhändig, ohne fremde Hilfe und vollständig erstellt hat. Diese Erklärung dient der Vorlage beim zuständigen Prüfungsausschuss.
+  </div>
+  <div style="display:flex;justify-content:space-between;">
+    <div style="width:44%;"><div style="border-bottom:1px solid #000;height:42px;margin-bottom:5px;"></div><div style="font-size:10px;color:#555;">Datum, Unterschrift Auszubildende/r</div><div style="font-size:10px;color:#222;margin-top:2px;">${fullName}</div></div>
+    <div style="width:44%;"><div style="border-bottom:1px solid #000;height:42px;margin-bottom:5px;"></div><div style="font-size:10px;color:#555;">Datum, Unterschrift Ausbilder/in</div><div style="font-size:10px;color:#222;margin-top:2px;">${escHtml(p.ausbilder||'–')}</div></div>
+  </div>
+  <div style="position:absolute;bottom:22px;left:64px;right:64px;text-align:center;font-size:9px;color:#999;border-top:1px solid #ddd;padding-top:5px;">
+    ${escHtml(p.company||'')} &nbsp;·&nbsp; KW ${e.kw} / ${e.year} &nbsp;·&nbsp; Seite ${pageNum} von ${total}
+  </div>
+</div>`;
+}
+
+// ===== PDF: compact page template =====
+function buildPageCompact(entries, p, fullName, pageNum, totalPages) {
+  const bd = p.birthdate ? fmtDate(p.birthdate) : '–';
+  const th = 'background:#1a1a2e;color:#fff;border:1px solid #333;padding:5px 4px;text-align:center;font-size:10px;white-space:nowrap;';
+  const thL = 'background:#1a1a2e;color:#fff;border:1px solid #333;padding:5px 6px;text-align:left;font-size:10px;white-space:nowrap;';
+  const tdC = 'border:1px solid #ccc;padding:4px;text-align:center;font-size:10px;vertical-align:top;';
+  const tdL = 'border:1px solid #ccc;padding:4px 6px;font-size:10px;vertical-align:top;';
+  const tdAlt = 'border:1px solid #ccc;padding:4px;text-align:center;font-size:10px;vertical-align:top;background:#fafafa;';
+  const tdLAlt = 'border:1px solid #ccc;padding:4px 6px;font-size:10px;vertical-align:top;background:#fafafa;';
+
+  const firstE = entries[0]; const lastE = entries[entries.length-1];
+  const periodStr = firstE && lastE ? 'KW '+firstE.kw+' – KW '+lastE.kw+' / '+lastE.year : '';
+
+  const rows = entries.map((e, i) => {
+    const alt = i % 2 === 1;
+    const tdCi = alt ? tdAlt : tdC;
+    const tdLi = alt ? tdLAlt : tdL;
+    const dr = (e.dateFrom&&e.dateTo) ? fmtDate(e.dateFrom)+' – '+fmtDate(e.dateTo) : '–';
+    const shortDesc = e.description ? escHtml(e.description.substring(0,65)) + (e.description.length>65?'…':'') : '–';
+    return `<tr>
+      <td style="${tdCi}"><strong>KW ${e.kw}</strong><br><span style="font-size:9px;color:#777;">${e.year}</span></td>
+      <td style="${tdCi}" >${dr}</td>
+      <td style="${tdLi}">${shortDesc}</td>
+      <td style="${tdCi}">${e.daysBetrieb||0}</td>
+      <td style="${tdCi}">${e.daysHome||0}</td>
+      <td style="${tdCi}">${e.daysSchool||0}</td>
+      <td style="${tdCi}">${e.daysSick||0}</td>
+      <td style="${tdCi}">${e.daysVacation||0}</td>
+      <td style="${tdCi}"><strong>${e.hours||0}</strong></td>
+    </tr>`;
+  }).join('');
+
+  const totals = {
+    betrieb: entries.reduce((s,e)=>s+(parseFloat(e.daysBetrieb)||0),0),
+    home:    entries.reduce((s,e)=>s+(parseFloat(e.daysHome)||0),0),
+    school:  entries.reduce((s,e)=>s+(parseFloat(e.daysSchool)||0),0),
+    sick:    entries.reduce((s,e)=>s+(parseFloat(e.daysSick)||0),0),
+    vac:     entries.reduce((s,e)=>s+(parseFloat(e.daysVacation)||0),0),
+    hours:   entries.reduce((s,e)=>s+(parseFloat(e.hours)||0),0),
+  };
+
+  return `<div style="background:#fff;width:794px;min-height:1123px;padding:40px 48px 60px;font-family:'Arial',sans-serif;font-size:12px;color:#000;box-sizing:border-box;position:relative;">
+
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #1a1a2e;padding-bottom:10px;margin-bottom:14px;">
+    <div>
+      <div style="font-size:18px;font-weight:bold;color:#1a1a2e;">Ausbildungsnachweis – Übersicht</div>
+      <div style="font-size:11px;color:#555;margin-top:2px;">${periodStr} &nbsp;·&nbsp; ${entries.length} Wochen</div>
+    </div>
+    <div style="text-align:right;font-size:11px;color:#444;">
+      <div><strong>${fullName}</strong></div>
+      <div>${escHtml(p.profession||'')}</div>
+      <div>${escHtml(p.company||'')}</div>
+    </div>
   </div>
 
-  <table style="width:100%;border-collapse:collapse;margin-bottom:14px;font-size:12px;">
+  <table style="width:100%;border-collapse:collapse;margin-bottom:6px;font-size:10.5px;">
     <tr>
-      <td style="padding:5px 8px;border:1px solid #aaa;font-weight:bold;background:#f0f0f0;width:22%;">Name Auszubildende/r</td>
-      <td style="padding:5px 8px;border:1px solid #aaa;width:28%;">${fullName}</td>
-      <td style="padding:5px 8px;border:1px solid #aaa;font-weight:bold;background:#f0f0f0;width:22%;">Geburtsdatum</td>
-      <td style="padding:5px 8px;border:1px solid #aaa;width:28%;">${birthdate}</td>
+      <td style="padding:4px 8px;border:1px solid #ccc;background:#f5f5f5;width:18%;font-weight:bold;">Auszubildende/r</td><td style="padding:4px 8px;border:1px solid #ccc;width:32%;">${fullName}</td>
+      <td style="padding:4px 8px;border:1px solid #ccc;background:#f5f5f5;width:16%;font-weight:bold;">Geburtsdatum</td><td style="padding:4px 8px;border:1px solid #ccc;">${bd}</td>
     </tr>
     <tr>
-      <td style="padding:5px 8px;border:1px solid #aaa;font-weight:bold;background:#f0f0f0;">Ausbildungsbetrieb</td>
-      <td style="padding:5px 8px;border:1px solid #aaa;">${p.company || '–'}</td>
-      <td style="padding:5px 8px;border:1px solid #aaa;font-weight:bold;background:#f0f0f0;">Ausbilder/in</td>
-      <td style="padding:5px 8px;border:1px solid #aaa;">${p.ausbilder || '–'}</td>
-    </tr>
-    <tr>
-      <td style="padding:5px 8px;border:1px solid #aaa;font-weight:bold;background:#f0f0f0;">Ausbildungsberuf</td>
-      <td style="padding:5px 8px;border:1px solid #aaa;">${p.profession || '–'}</td>
-      <td style="padding:5px 8px;border:1px solid #aaa;font-weight:bold;background:#f0f0f0;">Ausbildungsdauer</td>
-      <td style="padding:5px 8px;border:1px solid #aaa;">${p.startDate ? fmtDate(p.startDate) : '–'} – ${p.endDate ? fmtDate(p.endDate) : '–'}</td>
-    </tr>
-    <tr>
-      <td style="padding:5px 8px;border:1px solid #aaa;font-weight:bold;background:#f0f0f0;">Berichtszeitraum</td>
-      <td style="padding:5px 8px;border:1px solid #aaa;">${dateRange}</td>
-      <td style="padding:5px 8px;border:1px solid #aaa;font-weight:bold;background:#f0f0f0;">Kalenderwoche</td>
-      <td style="padding:5px 8px;border:1px solid #aaa;"><strong>KW ${e.kw} / ${e.year}</strong></td>
+      <td style="padding:4px 8px;border:1px solid #ccc;background:#f5f5f5;font-weight:bold;">Ausbilder/in</td><td style="padding:4px 8px;border:1px solid #ccc;">${escHtml(p.ausbilder||'–')}</td>
+      <td style="padding:4px 8px;border:1px solid #ccc;background:#f5f5f5;font-weight:bold;">Betrieb</td><td style="padding:4px 8px;border:1px solid #ccc;">${escHtml(p.company||'–')}</td>
     </tr>
   </table>
 
-  <div style="font-size:12px;font-weight:bold;margin-bottom:6px;">Beschreibung der Tätigkeiten:</div>
-  <div style="border:1px solid #aaa;padding:10px;min-height:170px;font-size:12px;line-height:1.6;word-break:break-word;margin-bottom:14px;">${desc}</div>
-
-  <table style="width:100%;border-collapse:collapse;margin-bottom:14px;font-size:12px;">
+  <table style="width:100%;border-collapse:collapse;margin-bottom:16px;">
     <thead>
       <tr>
-        <th style="background:#e0e0e0;border:1px solid #aaa;padding:6px 4px;text-align:center;">Betrieb<br>(Tage)</th>
-        <th style="background:#e0e0e0;border:1px solid #aaa;padding:6px 4px;text-align:center;">Homeoffice<br>(Tage)</th>
-        <th style="background:#e0e0e0;border:1px solid #aaa;padding:6px 4px;text-align:center;">Berufsschule<br>(Tage)</th>
-        <th style="background:#e0e0e0;border:1px solid #aaa;padding:6px 4px;text-align:center;">Krank<br>(Tage)</th>
-        <th style="background:#e0e0e0;border:1px solid #aaa;padding:6px 4px;text-align:center;">Urlaub<br>(Tage)</th>
-        <th style="background:#e0e0e0;border:1px solid #aaa;padding:6px 4px;text-align:center;">Stunden<br>gesamt</th>
+        <th style="${th}">KW</th>
+        <th style="${th}">Zeitraum</th>
+        <th style="${thL}">Tätigkeiten (Kurzfassung)</th>
+        <th style="${th}">Betrieb<br>T</th>
+        <th style="${th}">HO<br>T</th>
+        <th style="${th}">Schule<br>T</th>
+        <th style="${th}">Krank<br>T</th>
+        <th style="${th}">Url.<br>T</th>
+        <th style="${th}">Std.</th>
       </tr>
     </thead>
     <tbody>
-      <tr>
-        <td style="border:1px solid #aaa;padding:7px 4px;text-align:center;">${e.daysBetrieb || 0}</td>
-        <td style="border:1px solid #aaa;padding:7px 4px;text-align:center;">${e.daysHome || 0}</td>
-        <td style="border:1px solid #aaa;padding:7px 4px;text-align:center;">${e.daysSchool || 0}</td>
-        <td style="border:1px solid #aaa;padding:7px 4px;text-align:center;">${e.daysSick || 0}</td>
-        <td style="border:1px solid #aaa;padding:7px 4px;text-align:center;">${e.daysVacation || 0}</td>
-        <td style="border:1px solid #aaa;padding:7px 4px;text-align:center;"><strong>${e.hours || 0}</strong></td>
+      ${rows}
+      <tr style="background:#e8edf5;">
+        <td style="border:1px solid #aaa;padding:5px 4px;text-align:center;font-size:10px;font-weight:bold;" colspan="2">Summe (${entries.length} Wochen)</td>
+        <td style="border:1px solid #aaa;padding:5px 6px;font-size:10px;"></td>
+        <td style="border:1px solid #aaa;padding:5px 4px;text-align:center;font-size:10px;font-weight:bold;">${totals.betrieb}</td>
+        <td style="border:1px solid #aaa;padding:5px 4px;text-align:center;font-size:10px;font-weight:bold;">${totals.home}</td>
+        <td style="border:1px solid #aaa;padding:5px 4px;text-align:center;font-size:10px;font-weight:bold;">${totals.school}</td>
+        <td style="border:1px solid #aaa;padding:5px 4px;text-align:center;font-size:10px;font-weight:bold;">${totals.sick}</td>
+        <td style="border:1px solid #aaa;padding:5px 4px;text-align:center;font-size:10px;font-weight:bold;">${totals.vac}</td>
+        <td style="border:1px solid #aaa;padding:5px 4px;text-align:center;font-size:10px;font-weight:bold;">${totals.hours}</td>
       </tr>
     </tbody>
   </table>
 
-  <div style="border:1px solid #000;padding:12px;font-size:12px;line-height:1.6;background:#fafafa;margin-bottom:24px;">
-    <strong>Bestätigung gemäß § 43 BBiG:</strong><br>
-    Hiermit bestätigen wir, dass ${fullName} die gemäß § 43 Berufsbildungsgesetz erforderlichen Ausbildungsnachweise eigenhändig, ohne fremde Hilfe und vollständig erstellt hat. Diese Erklärung dient der Vorlage beim zuständigen Prüfungsausschuss.
+  <div style="display:flex;justify-content:space-between;margin-top:auto;padding-top:14px;">
+    <div style="width:44%;"><div style="border-bottom:1px solid #000;height:38px;margin-bottom:5px;"></div><div style="font-size:10px;color:#555;">Datum, Unterschrift Auszubildende/r</div><div style="font-size:10px;color:#222;margin-top:2px;">${fullName}</div></div>
+    <div style="width:44%;"><div style="border-bottom:1px solid #000;height:38px;margin-bottom:5px;"></div><div style="font-size:10px;color:#555;">Datum, Unterschrift Ausbilder/in</div><div style="font-size:10px;color:#222;margin-top:2px;">${escHtml(p.ausbilder||'–')}</div></div>
   </div>
 
-  <div style="display:flex;justify-content:space-between;margin-top:10px;">
-    <div style="width:44%;">
-      <div style="border-bottom:1px solid #000;height:44px;margin-bottom:6px;"></div>
-      <div style="font-size:11px;color:#444;">Datum, Unterschrift Auszubildende/r</div>
-      <div style="font-size:11px;color:#222;margin-top:2px;">${fullName}</div>
-    </div>
-    <div style="width:44%;">
-      <div style="border-bottom:1px solid #000;height:44px;margin-bottom:6px;"></div>
-      <div style="font-size:11px;color:#444;">Datum, Unterschrift Ausbilder/in</div>
-      <div style="font-size:11px;color:#222;margin-top:2px;">${p.ausbilder || '–'}</div>
-    </div>
-  </div>
-
-  <div style="position:absolute;bottom:24px;left:68px;right:68px;text-align:center;font-size:10px;color:#888;border-top:1px solid #ddd;padding-top:6px;">
-    ${p.company || ''} &nbsp;·&nbsp; KW ${e.kw} / ${e.year} &nbsp;·&nbsp; Seite ${pageNum} von ${total}
+  <div style="position:absolute;bottom:20px;left:48px;right:48px;text-align:center;font-size:9px;color:#999;border-top:1px solid #ddd;padding-top:5px;">
+    ${escHtml(p.company||'')} &nbsp;·&nbsp; ${periodStr} &nbsp;·&nbsp; Seite ${pageNum} von ${totalPages} &nbsp;·&nbsp; Kompakte Übersicht (kein offizieller Abgabenachweis gem. §43 BBiG)
   </div>
 </div>`;
 }
 
 // ===== Close modal on outside click =====
-document.getElementById('entryModal').addEventListener('click', function(e) { if (e.target === this) closeEntryModal(); });
+document.getElementById('entryModal').addEventListener('click', function(e) { if (e.target===this) closeEntryModal(); });
 
 // ===== Init =====
 initDB().then(async () => {
-  profile = (await dbGet('profile', 'main')) || {};
+  profile = (await dbGet('profile','main'))||{};
   renderDashboard();
-}).catch(err => toast('Datenbankfehler: ' + err.message, 'error'));
+}).catch(err => toast('Datenbankfehler: '+err.message,'error'));
 </script>
 </body>
 </html>
