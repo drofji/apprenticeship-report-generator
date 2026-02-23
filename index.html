@@ -983,7 +983,7 @@ function loadScript(src) {
     const s = document.createElement('script');
     s.src = src;
     s.onload = resolve;
-    s.onerror = reject;
+    s.onerror = () => reject(new Error('Skript konnte nicht geladen werden: ' + src));
     document.head.appendChild(s);
   });
 }
@@ -994,7 +994,7 @@ async function printReports(filtered) {
 
   if (filtered) {
     const from = parseInt(document.getElementById('printFrom').value) || 1;
-    const to = parseInt(document.getElementById('printTo').value) || 53;
+    const to   = parseInt(document.getElementById('printTo').value)   || 53;
     const year = parseInt(document.getElementById('printYear').value) || 0;
     entries = entries.filter(e => {
       if (year && e.year !== year) return false;
@@ -1005,42 +1005,61 @@ async function printReports(filtered) {
   entries.sort((a, b) => (a.year * 100 + a.kw) - (b.year * 100 + b.kw));
   if (entries.length === 0) { toast('Keine Berichte für den gewählten Zeitraum gefunden.', 'error'); return; }
 
-  toast('PDF wird erstellt…');
+  toast('PDF wird erstellt… bitte warten.');
 
   try {
-    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js');
-  } catch(e) {
-    toast('Bibliothek konnte nicht geladen werden. Bitte Internetverbindung prüfen.', 'error');
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+  } catch(err) {
+    toast('Bibliothek konnte nicht geladen werden. Internetverbindung prüfen.', 'error');
     return;
   }
 
   const fullName = ((profile.firstName || '') + ' ' + (profile.lastName || '')).trim() || 'Alexander Wiese';
-  const pages = entries.map((e, i) => buildPrintPage(e, profile, fullName, i + 1, entries.length)).join('');
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+  const A4_W = 210, A4_H = 297;
 
-  const wrapper = document.createElement('div');
-  wrapper.innerHTML = pages;
-  wrapper.style.cssText = 'position:absolute;left:-9999px;top:0;';
-  document.body.appendChild(wrapper);
+  // Render each page separately so styles are fully applied
+  for (let i = 0; i < entries.length; i++) {
+    const e = entries[i];
+
+    // Build isolated iframe so page styles don't bleed
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;height:1123px;border:none;visibility:hidden;';
+    document.body.appendChild(iframe);
+
+    const pageHTML = buildPrintPage(e, profile, fullName, i + 1, entries.length);
+    const iDoc = iframe.contentDocument || iframe.contentWindow.document;
+    iDoc.open();
+    iDoc.write('<!DOCTYPE html><html><head><meta charset="UTF-8">'
+      + '<style>*{box-sizing:border-box;margin:0;padding:0;}body{background:#fff;}</style>'
+      + '</head><body>' + pageHTML + '</body></html>');
+    iDoc.close();
+
+    // Wait for fonts/layout
+    await new Promise(r => setTimeout(r, 300));
+
+    const pageEl = iDoc.body.firstElementChild;
+    const canvas = await html2canvas(pageEl, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      width: 794,
+      windowWidth: 794,
+      logging: false,
+    });
+
+    document.body.removeChild(iframe);
+
+    const imgData = canvas.toDataURL('image/jpeg', 0.97);
+    if (i > 0) doc.addPage();
+    doc.addImage(imgData, 'JPEG', 0, 0, A4_W, A4_H);
+  }
 
   const filename = 'Berichtsheft_' + fullName.replace(/ /g, '_') + '_' + new Date().toISOString().split('T')[0] + '.pdf';
-
-  const opt = {
-    margin: 0,
-    filename: filename,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, letterRendering: true },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    pagebreak: { mode: ['css', 'legacy'], before: '.print-page' }
-  };
-
-  try {
-    await html2pdf().set(opt).from(wrapper).save();
-    toast('PDF erfolgreich heruntergeladen!', 'success');
-  } catch(e) {
-    toast('Fehler beim PDF-Erstellen: ' + e.message, 'error');
-  } finally {
-    document.body.removeChild(wrapper);
-  }
+  doc.save(filename);
+  toast('PDF erfolgreich heruntergeladen! (' + entries.length + ' Seiten)', 'success');
 }
 
 function buildPrintPage(e, p, fullName, pageNum, total) {
@@ -1048,66 +1067,89 @@ function buildPrintPage(e, p, fullName, pageNum, total) {
   const birthdate = p.birthdate ? fmtDate(p.birthdate) : '–';
   const desc = (e.description || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
 
-  const s = {
-    page: 'background:#fff;padding:15mm 18mm 20mm;font-family:Times New Roman,serif;font-size:10pt;color:#000;width:210mm;min-height:267mm;position:relative;box-sizing:border-box;page-break-after:always;',
-    header: 'margin-bottom:5mm;border-bottom:0.5pt solid #000;padding-bottom:3mm;',
-    title: 'font-size:14pt;font-weight:bold;',
-    subtitle: 'font-size:10pt;color:#444;',
-    table: 'width:100%;border-collapse:collapse;margin-bottom:4mm;',
-    tdLabel: 'padding:2mm 3mm;border:0.5pt solid #999;font-size:9.5pt;font-weight:bold;background:#f5f5f5;width:22%;vertical-align:top;',
-    tdValue: 'padding:2mm 3mm;border:0.5pt solid #999;font-size:9.5pt;vertical-align:top;',
-    desc: 'border:0.5pt solid #999;padding:3mm;min-height:45mm;font-size:9.5pt;margin-bottom:4mm;white-space:pre-wrap;',
-    thCell: 'background:#e8e8e8;border:0.5pt solid #999;padding:2mm;font-size:9pt;text-align:center;',
-    tdCell: 'border:0.5pt solid #999;padding:2mm;text-align:center;font-size:9.5pt;',
-    confirm: 'border:0.5pt solid #000;padding:4mm;font-size:9pt;margin-bottom:6mm;line-height:1.5;background:#fafafa;',
-    sigRow: 'display:flex;justify-content:space-between;margin-top:8mm;',
-    sigBox: 'width:45%;',
-    sigLine: 'border-bottom:0.5pt solid #000;height:12mm;margin-bottom:2mm;',
-    sigLabel: 'font-size:8.5pt;color:#444;',
-    sigName: 'font-size:8.5pt;color:#222;margin-top:1mm;',
-    footer: 'text-align:center;font-size:8pt;color:#777;border-top:0.5pt solid #ccc;padding-top:2mm;margin-top:8mm;',
-  };
+  // 794px = A4 width at 96dpi; all sizes in px for reliable html2canvas rendering
+  return `<div style="background:#fff;width:794px;min-height:1123px;padding:56px 68px 76px;font-family:'Times New Roman',serif;font-size:13px;color:#000;box-sizing:border-box;position:relative;">
 
-  return '<div style="' + s.page + '">'
-    + '<div style="' + s.header + '">'
-    + '<div style="' + s.title + '">Ausbildungsnachweis</div>'
-    + '<div style="' + s.subtitle + '">gemäß § 43 Berufsbildungsgesetz (BBiG) – Wochenbericht</div>'
-    + '</div>'
-    + '<table style="' + s.table + '">'
-    + '<tr><td style="' + s.tdLabel + '">Name Auszubildende/r</td><td style="' + s.tdValue + '">' + fullName + '</td><td style="' + s.tdLabel + '">Geburtsdatum</td><td style="' + s.tdValue + '">' + birthdate + '</td></tr>'
-    + '<tr><td style="' + s.tdLabel + '">Ausbildungsbetrieb</td><td style="' + s.tdValue + '">' + (p.company || '–') + '</td><td style="' + s.tdLabel + '">Ausbilder/in</td><td style="' + s.tdValue + '">' + (p.ausbilder || '–') + '</td></tr>'
-    + '<tr><td style="' + s.tdLabel + '">Ausbildungsberuf</td><td style="' + s.tdValue + '">' + (p.profession || '–') + '</td><td style="' + s.tdLabel + '">Ausbildungsdauer</td><td style="' + s.tdValue + '">' + (p.startDate ? fmtDate(p.startDate) : '–') + ' bis ' + (p.endDate ? fmtDate(p.endDate) : '–') + '</td></tr>'
-    + '<tr><td style="' + s.tdLabel + '">Berichtszeitraum</td><td style="' + s.tdValue + '">' + dateRange + '</td><td style="' + s.tdLabel + '">Kalenderwoche</td><td style="' + s.tdValue + '"><strong>KW ' + e.kw + ' / ' + e.year + '</strong></td></tr>'
-    + '</table>'
-    + '<div style="font-size:9pt;font-weight:bold;margin-bottom:3mm;margin-top:3mm;">Beschreibung der Tätigkeiten:</div>'
-    + '<div style="' + s.desc + '">' + desc + '</div>'
-    + '<table style="' + s.table + '">'
-    + '<thead><tr>'
-    + '<th style="' + s.thCell + '">Betrieb (Tage)</th>'
-    + '<th style="' + s.thCell + '">Homeoffice (Tage)</th>'
-    + '<th style="' + s.thCell + '">Berufsschule (Tage)</th>'
-    + '<th style="' + s.thCell + '">Krank (Tage)</th>'
-    + '<th style="' + s.thCell + '">Urlaub (Tage)</th>'
-    + '<th style="' + s.thCell + '">Stunden gesamt</th>'
-    + '</tr></thead>'
-    + '<tbody><tr>'
-    + '<td style="' + s.tdCell + '">' + (e.daysBetrieb || 0) + '</td>'
-    + '<td style="' + s.tdCell + '">' + (e.daysHome || 0) + '</td>'
-    + '<td style="' + s.tdCell + '">' + (e.daysSchool || 0) + '</td>'
-    + '<td style="' + s.tdCell + '">' + (e.daysSick || 0) + '</td>'
-    + '<td style="' + s.tdCell + '">' + (e.daysVacation || 0) + '</td>'
-    + '<td style="' + s.tdCell + '"><strong>' + (e.hours || 0) + '</strong></td>'
-    + '</tr></tbody></table>'
-    + '<div style="' + s.confirm + '">'
-    + '<strong>Bestätigung gemäß § 43 BBiG:</strong><br>'
-    + 'Hiermit bestätigen wir, dass ' + fullName + ' die gemäß § 43 Berufsbildungsgesetz erforderlichen Ausbildungsnachweise eigenhändig, ohne fremde Hilfe und vollständig erstellt hat. Diese Erklärung dient der Vorlage beim zuständigen Prüfungsausschuss.'
-    + '</div>'
-    + '<div style="' + s.sigRow + '">'
-    + '<div style="' + s.sigBox + '"><div style="' + s.sigLine + '"></div><div style="' + s.sigLabel + '">Datum, Unterschrift Auszubildende/r</div><div style="' + s.sigName + '">' + fullName + '</div></div>'
-    + '<div style="' + s.sigBox + '"><div style="' + s.sigLine + '"></div><div style="' + s.sigLabel + '">Datum, Unterschrift Ausbilder/in</div><div style="' + s.sigName + '">' + (p.ausbilder || '–') + '</div></div>'
-    + '</div>'
-    + '<div style="' + s.footer + '">' + (p.company || '') + ' &nbsp;·&nbsp; KW ' + e.kw + ' / ' + e.year + ' &nbsp;·&nbsp; Seite ' + pageNum + ' von ' + total + '</div>'
-    + '</div>';
+  <div style="border-bottom:1px solid #000;padding-bottom:10px;margin-bottom:16px;">
+    <div style="font-size:20px;font-weight:bold;line-height:1.2;">Ausbildungsnachweis</div>
+    <div style="font-size:13px;color:#444;margin-top:3px;">gemäß § 43 Berufsbildungsgesetz (BBiG) – Wochenbericht</div>
+  </div>
+
+  <table style="width:100%;border-collapse:collapse;margin-bottom:14px;font-size:12px;">
+    <tr>
+      <td style="padding:5px 8px;border:1px solid #aaa;font-weight:bold;background:#f0f0f0;width:22%;">Name Auszubildende/r</td>
+      <td style="padding:5px 8px;border:1px solid #aaa;width:28%;">${fullName}</td>
+      <td style="padding:5px 8px;border:1px solid #aaa;font-weight:bold;background:#f0f0f0;width:22%;">Geburtsdatum</td>
+      <td style="padding:5px 8px;border:1px solid #aaa;width:28%;">${birthdate}</td>
+    </tr>
+    <tr>
+      <td style="padding:5px 8px;border:1px solid #aaa;font-weight:bold;background:#f0f0f0;">Ausbildungsbetrieb</td>
+      <td style="padding:5px 8px;border:1px solid #aaa;">${p.company || '–'}</td>
+      <td style="padding:5px 8px;border:1px solid #aaa;font-weight:bold;background:#f0f0f0;">Ausbilder/in</td>
+      <td style="padding:5px 8px;border:1px solid #aaa;">${p.ausbilder || '–'}</td>
+    </tr>
+    <tr>
+      <td style="padding:5px 8px;border:1px solid #aaa;font-weight:bold;background:#f0f0f0;">Ausbildungsberuf</td>
+      <td style="padding:5px 8px;border:1px solid #aaa;">${p.profession || '–'}</td>
+      <td style="padding:5px 8px;border:1px solid #aaa;font-weight:bold;background:#f0f0f0;">Ausbildungsdauer</td>
+      <td style="padding:5px 8px;border:1px solid #aaa;">${p.startDate ? fmtDate(p.startDate) : '–'} – ${p.endDate ? fmtDate(p.endDate) : '–'}</td>
+    </tr>
+    <tr>
+      <td style="padding:5px 8px;border:1px solid #aaa;font-weight:bold;background:#f0f0f0;">Berichtszeitraum</td>
+      <td style="padding:5px 8px;border:1px solid #aaa;">${dateRange}</td>
+      <td style="padding:5px 8px;border:1px solid #aaa;font-weight:bold;background:#f0f0f0;">Kalenderwoche</td>
+      <td style="padding:5px 8px;border:1px solid #aaa;"><strong>KW ${e.kw} / ${e.year}</strong></td>
+    </tr>
+  </table>
+
+  <div style="font-size:12px;font-weight:bold;margin-bottom:6px;">Beschreibung der Tätigkeiten:</div>
+  <div style="border:1px solid #aaa;padding:10px;min-height:170px;font-size:12px;line-height:1.6;word-break:break-word;margin-bottom:14px;">${desc}</div>
+
+  <table style="width:100%;border-collapse:collapse;margin-bottom:14px;font-size:12px;">
+    <thead>
+      <tr>
+        <th style="background:#e0e0e0;border:1px solid #aaa;padding:6px 4px;text-align:center;">Betrieb<br>(Tage)</th>
+        <th style="background:#e0e0e0;border:1px solid #aaa;padding:6px 4px;text-align:center;">Homeoffice<br>(Tage)</th>
+        <th style="background:#e0e0e0;border:1px solid #aaa;padding:6px 4px;text-align:center;">Berufsschule<br>(Tage)</th>
+        <th style="background:#e0e0e0;border:1px solid #aaa;padding:6px 4px;text-align:center;">Krank<br>(Tage)</th>
+        <th style="background:#e0e0e0;border:1px solid #aaa;padding:6px 4px;text-align:center;">Urlaub<br>(Tage)</th>
+        <th style="background:#e0e0e0;border:1px solid #aaa;padding:6px 4px;text-align:center;">Stunden<br>gesamt</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="border:1px solid #aaa;padding:7px 4px;text-align:center;">${e.daysBetrieb || 0}</td>
+        <td style="border:1px solid #aaa;padding:7px 4px;text-align:center;">${e.daysHome || 0}</td>
+        <td style="border:1px solid #aaa;padding:7px 4px;text-align:center;">${e.daysSchool || 0}</td>
+        <td style="border:1px solid #aaa;padding:7px 4px;text-align:center;">${e.daysSick || 0}</td>
+        <td style="border:1px solid #aaa;padding:7px 4px;text-align:center;">${e.daysVacation || 0}</td>
+        <td style="border:1px solid #aaa;padding:7px 4px;text-align:center;"><strong>${e.hours || 0}</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="border:1px solid #000;padding:12px;font-size:12px;line-height:1.6;background:#fafafa;margin-bottom:24px;">
+    <strong>Bestätigung gemäß § 43 BBiG:</strong><br>
+    Hiermit bestätigen wir, dass ${fullName} die gemäß § 43 Berufsbildungsgesetz erforderlichen Ausbildungsnachweise eigenhändig, ohne fremde Hilfe und vollständig erstellt hat. Diese Erklärung dient der Vorlage beim zuständigen Prüfungsausschuss.
+  </div>
+
+  <div style="display:flex;justify-content:space-between;margin-top:10px;">
+    <div style="width:44%;">
+      <div style="border-bottom:1px solid #000;height:44px;margin-bottom:6px;"></div>
+      <div style="font-size:11px;color:#444;">Datum, Unterschrift Auszubildende/r</div>
+      <div style="font-size:11px;color:#222;margin-top:2px;">${fullName}</div>
+    </div>
+    <div style="width:44%;">
+      <div style="border-bottom:1px solid #000;height:44px;margin-bottom:6px;"></div>
+      <div style="font-size:11px;color:#444;">Datum, Unterschrift Ausbilder/in</div>
+      <div style="font-size:11px;color:#222;margin-top:2px;">${p.ausbilder || '–'}</div>
+    </div>
+  </div>
+
+  <div style="position:absolute;bottom:24px;left:68px;right:68px;text-align:center;font-size:10px;color:#888;border-top:1px solid #ddd;padding-top:6px;">
+    ${p.company || ''} &nbsp;·&nbsp; KW ${e.kw} / ${e.year} &nbsp;·&nbsp; Seite ${pageNum} von ${total}
+  </div>
+</div>`;
 }
 
 // ===== Close modal on outside click =====
