@@ -383,7 +383,7 @@ textarea { resize: vertical; min-height: 80px; }
   <div style="background:#fff;border-radius:12px;padding:32px 36px;max-width:440px;width:92%;box-shadow:0 8px 40px rgba(0,0,0,0.22);text-align:center;">
     <div style="font-size:28px;margin-bottom:12px;">📄</div>
     <div style="font-size:17px;font-weight:700;color:#191919;margin-bottom:6px;" id="pdfModalTitle">PDF wird erstellt…</div>
-    <div style="font-size:13px;color:#666;margin-bottom:18px;" id="pdfModalStatus">Seite 1 von …</div>
+    <div style="font-size:13px;color:#666;margin-bottom:18px;" id="pdfModalStatus">Verarbeitung...</div>
     <div style="background:#f0efec;border-radius:20px;height:10px;width:100%;margin-bottom:22px;overflow:hidden;">
       <div id="pdfProgressBar" style="height:10px;width:0%;background:#0a66c2;border-radius:20px;transition:width 0.2s ease;"></div>
     </div>
@@ -999,19 +999,17 @@ function pdfShowModal(total) {
   const m = document.getElementById('pdfProgressModal');
   m.style.display = 'flex';
   document.getElementById('pdfModalTitle').textContent = 'PDF wird erstellt…';
-  document.getElementById('pdfModalStatus').textContent = 'Seite 1 von ' + total;
+  document.getElementById('pdfModalStatus').textContent = 'Verarbeitung...';
   document.getElementById('pdfProgressBar').style.width = '0%';
 }
 
 function pdfUpdateProgress(current, total) {
   const pct = Math.round((current / total) * 100);
   if (!_pdfMinimized) {
-    document.getElementById('pdfModalStatus').textContent = 'Seite ' + current + ' von ' + total;
     document.getElementById('pdfProgressBar').style.width = pct + '%';
   }
   if (_progressToastEl) {
     _progressToastEl.querySelector('.progress-toast-bar').style.width = pct + '%';
-    _progressToastEl.querySelector('.pt-status').textContent = 'Seite ' + current + ' von ' + total;
   }
 }
 
@@ -1028,7 +1026,7 @@ function pdfMinimize() {
        <span>📄 PDF wird generiert…</span>
        <button onclick="pdfAbort()" style="background:none;border:none;color:#ff6b6b;cursor:pointer;font-size:18px;line-height:1;padding:0;" title="Abbrechen">✕</button>
      </div>
-     <div class="pt-status" style="font-size:11px;color:#aaa;margin-bottom:7px;">Seite 1 von …</div>
+     <div class="pt-status" style="font-size:11px;color:#aaa;margin-bottom:7px;">Verarbeitung...</div>
      <div class="progress-toast-bar-wrap"><div class="progress-toast-bar" style="width:0%"></div></div>`;
   container.appendChild(el);
   _progressToastEl = el;
@@ -1168,7 +1166,7 @@ function buildPageDetailed(e, p, fullName, pageNum, total) {
     <div style="width:44%;"><div style="border-bottom:1px solid #000;height:42px;margin-bottom:5px;"></div><div style="font-size:10px;color:#555;">Datum, Unterschrift Ausbilder/in</div><div style="font-size:10px;color:#222;margin-top:2px;">${escHtml(p.ausbilder||'–')}</div></div>
   </div>
   <div style="position:absolute;bottom:22px;left:64px;right:64px;text-align:center;font-size:9px;color:#999;border-top:1px solid #ddd;padding-top:5px;">
-    ${escHtml(p.company||'')} &nbsp;·&nbsp; KW ${e.kw} / ${e.year} &nbsp;·&nbsp; Seite ${pageNum} von ${total}
+    ${escHtml(p.company||'')} &nbsp;·&nbsp; KW ${e.kw} / ${e.year}
   </div>
 </div>`;
 }
@@ -1199,14 +1197,14 @@ function buildPageCompact(entries, p, fullName, pageNum, totalPages, startIndex)
     const totalHours = (e.hours || workHours);
 
     const hoursCell = hasSchool
-      ? `<td style="border:1px solid #c8c8c8;padding:3px 4px;text-align:center;font-size:8.5px;background:${rowBg};">${workHours}</td>
-         <td style="border:1px solid #c8c8c8;padding:3px 4px;text-align:center;font-size:8.5px;background:${rowBg};">${schoolHours > 0 ? schoolHours : '–'}</td>
-         <td style="border:1px solid #c8c8c8;padding:3px 4px;text-align:center;font-size:8.5px;background:${rowBg};font-weight:700;">${totalHours}</td>`
-      : `<td style="border:1px solid #c8c8c8;padding:3px 4px;text-align:center;font-size:8.5px;background:${rowBg};font-weight:700;">${workHours}</td>`;
+      ? `<td style="border:1px solid #c8c8c8;padding:3px 4px;text-align:center;font-size:8.5px;background:${rowBg};">${workHours || ''}</td>
+         <td style="border:1px solid #c8c8c8;padding:3px 4px;text-align:center;font-size:8.5px;background:${rowBg};">${schoolHours || ''}</td>
+         <td style="border:1px solid #c8c8c8;padding:3px 4px;text-align:center;font-size:8.5px;background:${rowBg};font-weight:700;">${totalHours || ''}</td>`
+      : `<td style="border:1px solid #c8c8c8;padding:3px 4px;text-align:center;font-size:8.5px;background:${rowBg};font-weight:700;">${workHours || ''}</td>`;
 
     const hoursHeader = hasSchool
       ? `<th style="${thS}">Stunden<br>Arbeit</th><th style="${thS}">Stunden<br>Schule</th><th style="${thS}">Stunden<br>gesamt</th>`
-      : `<th style="${thS}">Stunden</th>`;
+      : `<th style="${thS}">Stunden<br>Arbeit</th>`;
 
     return `
     <!-- Week ${e.kw}/${e.year} -->
@@ -1231,11 +1229,11 @@ function buildPageCompact(entries, p, fullName, pageNum, totalPages, startIndex)
         </thead>
         <tbody>
           <tr>
-            <td style="border:1px solid #c8c8c8;padding:3px 4px;text-align:center;font-size:8.5px;background:${rowBg};">${e.daysBetrieb||0}</td>
-            <td style="border:1px solid #c8c8c8;padding:3px 4px;text-align:center;font-size:8.5px;background:${rowBg};">${e.daysHome||0}</td>
-            <td style="border:1px solid #c8c8c8;padding:3px 4px;text-align:center;font-size:8.5px;background:${rowBg};">${e.daysSchool||0}</td>
-            <td style="border:1px solid #c8c8c8;padding:3px 4px;text-align:center;font-size:8.5px;background:${rowBg};">${e.daysSick||0}</td>
-            <td style="border:1px solid #c8c8c8;padding:3px 4px;text-align:center;font-size:8.5px;background:${rowBg};">${e.daysVacation||0}</td>
+            <td style="border:1px solid #c8c8c8;padding:3px 4px;text-align:center;font-size:8.5px;background:${rowBg};">${e.daysBetrieb||''}</td>
+            <td style="border:1px solid #c8c8c8;padding:3px 4px;text-align:center;font-size:8.5px;background:${rowBg};">${e.daysHome||''}</td>
+            <td style="border:1px solid #c8c8c8;padding:3px 4px;text-align:center;font-size:8.5px;background:${rowBg};">${e.daysSchool||''}</td>
+            <td style="border:1px solid #c8c8c8;padding:3px 4px;text-align:center;font-size:8.5px;background:${rowBg};">${e.daysSick||''}</td>
+            <td style="border:1px solid #c8c8c8;padding:3px 4px;text-align:center;font-size:8.5px;background:${rowBg};">${e.daysVacation||''}</td>
             ${hoursCell}
           </tr>
         </tbody>
@@ -1252,7 +1250,7 @@ function buildPageCompact(entries, p, fullName, pageNum, totalPages, startIndex)
   <!-- Page header -->
   <div style="text-align:center;border-bottom:2.5px solid #1f3a5f;padding-bottom:7px;margin-bottom:9px;">
     <div style="font-size:15px;font-weight:bold;color:#1f3a5f;">Ausbildungsnachweis gemäß § 43 BBiG</div>
-    <div style="font-size:9px;color:#666;margin-top:2px;">${periodStr} · ${entries.length} Woche(n) · Seite ${pageNum} von ${totalPages}</div>
+    <div style="font-size:9px;color:#666;margin-top:2px;">${periodStr} · ${entries.length} Woche(n)</div>
   </div>
 
   <!-- Profile info compact -->
@@ -1292,7 +1290,7 @@ function buildPageCompact(entries, p, fullName, pageNum, totalPages, startIndex)
 
   <!-- Footer -->
   <div style="position:absolute;bottom:16px;left:44px;right:44px;text-align:center;font-size:7.5px;color:#aaa;border-top:1px solid #e8e8e8;padding-top:4px;">
-    ${escHtml(p.company||'')} &nbsp;·&nbsp; ${periodStr} &nbsp;·&nbsp; Seite ${pageNum} von ${totalPages} &nbsp;·&nbsp; Ausbildungsnachweis gem. § 43 BBiG – geeignet als offizieller Abgabenachweis beim Prüfungsausschuss
+    ${escHtml(p.company||'')} &nbsp;·&nbsp; ${periodStr} &nbsp;·&nbsp; Ausbildungsnachweis gem. § 43 BBiG – geeignet als offizieller Abgabenachweis beim Prüfungsausschuss
   </div>
 </div>`;
 }
