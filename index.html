@@ -1178,13 +1178,43 @@ function buildPageCompact(entries, p, fullName, pageNum, totalPages, startIndex)
     ? 'KW ' + entries[0].kw + ' – KW ' + entries[entries.length-1].kw + ' / ' + entries[entries.length-1].year
     : '';
 
+  // Calculate N (total weeks)
+  let N = null;
+  if (p.startDate && p.endDate) {
+    const startMon = getMondayOfKW(getISOWeek(new Date(p.startDate + 'T00:00:00')), getISOWeekYear(new Date(p.startDate + 'T00:00:00')));
+    const endMon = getMondayOfKW(getISOWeek(new Date(p.endDate + 'T00:00:00')), getISOWeekYear(new Date(p.endDate + 'T00:00:00')));
+    N = Math.round((endMon - startMon) / (7 * 24 * 60 * 60 * 1000)) + 1;
+  }
+
+  const startMon = p.startDate ? getMondayOfKW(getISOWeek(new Date(p.startDate + 'T00:00:00')), getISOWeekYear(new Date(p.startDate + 'T00:00:00'))) : null;
+
   // Check if ANY entry on this page has school hours
   const hasSchool = entries.some(e => (parseFloat(e.hoursSchool)||0) > 0);
+
+  // Define potential columns
+  const allCols = [
+    { id: 'daysBetrieb', label: 'Betrieb', val: e => e.daysBetrieb },
+    { id: 'daysHome', label: 'Homeoffice', val: e => e.daysHome },
+    { id: 'daysSchool', label: 'Schule', val: e => e.daysSchool },
+    { id: 'daysSick', label: 'Krank', val: e => e.daysSick },
+    { id: 'daysVacation', label: 'Urlaub', val: e => e.daysVacation },
+    { id: 'hoursBetrieb', label: hasSchool ? 'Std. Arbeit' : 'Stunden Arbeit', val: e => e.hoursBetrieb },
+    { id: 'hoursSchool', label: 'Std. Schule', val: e => e.hoursSchool },
+    { id: 'hoursTotal', label: 'Gesamt', val: e => e.hours || e.hoursBetrieb, bold: true }
+  ];
+
+  // Filter active columns
+  const activeCols = allCols.filter(col => {
+    if (col.id === 'hoursTotal') return hasSchool;
+    return entries.some(e => (parseFloat(col.val(e)) || 0) > 0);
+  });
 
   const thS  = 'background:#1f3a5f;color:#fff;border:1px solid #1a3354;padding:4px 3px;text-align:center;font-size:9px;white-space:nowrap;font-weight:700;';
   const thSL = 'background:#1f3a5f;color:#fff;border:1px solid #1a3354;padding:4px 6px;text-align:left;font-size:9px;font-weight:700;';
   const td1s = 'padding:3px 7px;border:1px solid #ccc;font-weight:bold;background:#f0f2f5;font-size:9px;white-space:nowrap;vertical-align:middle;';
   const td2s = 'padding:3px 7px;border:1px solid #ccc;font-size:9px;vertical-align:middle;';
+
+  const colWidth = (100 / activeCols.length) + '%';
 
   // Build one "week block" = header row (KW/meta) + attendance row + description
   const weekBlocks = entries.map((e, i) => {
@@ -1192,19 +1222,22 @@ function buildPageCompact(entries, p, fullName, pageNum, totalPages, startIndex)
     const desc = e.description ? escHtml(e.description).replace(/\n/g, '<br>') : '–';
     const rowBg = i % 2 === 0 ? '#fff' : '#f7f9fc';
     const rowBgD = i % 2 === 0 ? '#fafcff' : '#f0f4f9';
-    const workHours = (e.hoursBetrieb || 0);
-    const schoolHours = (e.hoursSchool || 0);
-    const totalHours = (e.hours || workHours);
 
-    const hoursCell = hasSchool
-      ? `<td style="border:1px solid #c8c8c8;padding:3px 4px;text-align:center;font-size:8.5px;background:${rowBg};">${workHours || ''}</td>
-         <td style="border:1px solid #c8c8c8;padding:3px 4px;text-align:center;font-size:8.5px;background:${rowBg};">${schoolHours || ''}</td>
-         <td style="border:1px solid #c8c8c8;padding:3px 4px;text-align:center;font-size:8.5px;background:${rowBg};font-weight:700;">${totalHours || ''}</td>`
-      : `<td style="border:1px solid #c8c8c8;padding:3px 4px;text-align:center;font-size:8.5px;background:${rowBg};font-weight:700;">${workHours || ''}</td>`;
+    // Calculate X (training week)
+    let X = startIndex + i + 1;
+    if (startMon && e.dateFrom) {
+        const entryMon = getMondayOfKW(getISOWeek(new Date(e.dateFrom + 'T00:00:00')), getISOWeekYear(new Date(e.dateFrom + 'T00:00:00')));
+        X = Math.round((entryMon - startMon) / (7 * 24 * 60 * 60 * 1000)) + 1;
+    }
+    const weekLabel = N ? `Ausbildungswoche ${X} / ${N}` : `Ausbildungswoche ${X}`;
 
-    const hoursHeader = hasSchool
-      ? `<th style="${thS}">Stunden<br>Arbeit</th><th style="${thS}">Stunden<br>Schule</th><th style="${thS}">Stunden<br>gesamt</th>`
-      : `<th style="${thS}">Stunden<br>Arbeit</th>`;
+    const headersHtml = activeCols.map(col => `<th style="${thS}width:${colWidth};">${col.label}</th>`).join('');
+    const cellsHtml = activeCols.map(col => {
+        const v = col.val(e);
+        const displayV = (parseFloat(v) || 0) > 0 ? v : '';
+        const style = `border:1px solid #c8c8c8;padding:3px 4px;text-align:center;font-size:8.5px;background:${rowBg};width:${colWidth};${col.bold?'font-weight:700;':''}`;
+        return `<td style="${style}">${displayV}</td>`;
+    }).join('');
 
     return `
     <!-- Week ${e.kw}/${e.year} -->
@@ -1213,28 +1246,18 @@ function buildPageCompact(entries, p, fullName, pageNum, totalPages, startIndex)
       <div style="background:#1f3a5f;color:#fff;display:flex;align-items:center;padding:4px 8px;gap:12px;">
         <span style="font-size:11px;font-weight:700;white-space:nowrap;">KW ${e.kw} / ${e.year}</span>
         <span style="font-size:9px;opacity:0.85;">${dr}</span>
-        <span style="margin-left:auto;font-size:9px;opacity:0.7;">Ausbildungswoche ${startIndex + i + 1}</span>
+        <span style="margin-left:auto;font-size:9px;opacity:0.7;">${weekLabel}</span>
       </div>
       <!-- Attendance table -->
-      <table style="width:100%;border-collapse:collapse;">
+      <table style="width:100%;border-collapse:collapse;table-layout:fixed;">
         <thead>
           <tr>
-            <th style="${thS}">Betrieb<br>Tage</th>
-            <th style="${thS}">Homeoffice<br>Tage</th>
-            <th style="${thS}">Schule<br>Tage</th>
-            <th style="${thS}">Krank<br>Tage</th>
-            <th style="${thS}">Urlaub<br>Tage</th>
-            ${hoursHeader}
+            ${headersHtml}
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td style="border:1px solid #c8c8c8;padding:3px 4px;text-align:center;font-size:8.5px;background:${rowBg};">${e.daysBetrieb||''}</td>
-            <td style="border:1px solid #c8c8c8;padding:3px 4px;text-align:center;font-size:8.5px;background:${rowBg};">${e.daysHome||''}</td>
-            <td style="border:1px solid #c8c8c8;padding:3px 4px;text-align:center;font-size:8.5px;background:${rowBg};">${e.daysSchool||''}</td>
-            <td style="border:1px solid #c8c8c8;padding:3px 4px;text-align:center;font-size:8.5px;background:${rowBg};">${e.daysSick||''}</td>
-            <td style="border:1px solid #c8c8c8;padding:3px 4px;text-align:center;font-size:8.5px;background:${rowBg};">${e.daysVacation||''}</td>
-            ${hoursCell}
+            ${cellsHtml}
           </tr>
         </tbody>
       </table>
